@@ -1,0 +1,105 @@
+export interface Department {
+  id: string
+  name: string
+  description: string | null
+  created_at: string
+}
+
+export interface Profile {
+  id: string
+  email: string | null
+  username: string
+  full_name: string
+  department_id: string | null
+  role: "admin" | "staff"
+  is_active: boolean
+  requires_password_change: boolean
+  created_at: string
+  updated_at: string
+  department?: Department
+}
+
+export interface Category {
+  id: string
+  name: string
+  color: string
+  created_at: string
+}
+
+export interface HandoverNote {
+  id: string
+  author_id: string
+  department_id: string
+  category_id: string | null
+  title: string
+  content: string
+  priority: "low" | "normal" | "urgent"
+  note_date: string
+  created_at: string
+  updated_at: string
+  author?: Profile
+  department?: Department
+  category?: Category
+}
+
+export interface Resource {
+  id: string
+  title: string
+  content: string
+  category: string
+  created_by: string | null
+  created_at: string
+  updated_at: string
+  creator?: Profile
+}
+
+export interface Complaint {
+  id: string
+  title: string
+  description: string
+  guest_name: string | null
+  room_number: string | null
+  status: "open" | "resolved"
+  priority: "low" | "normal" | "urgent"
+  created_by: string | null
+  assigned_to: string | null
+  department_id: string | null
+  resolved_at: string | null
+  resolved_by: string | null
+  created_at: string
+  updated_at: string
+  creator?: Profile
+  assignee?: Profile
+  resolver?: Profile
+  department?: Department
+  comments?: ComplaintComment[]
+  comment_count?: number
+}
+
+export interface ComplaintComment {
+  id: string
+  complaint_id: string
+  author_id: string | null
+  content: string
+  created_at: string
+  author?: Profile
+}
+
+export interface Notification {
+  id: string
+  title: string
+  content: string
+  priority: "low" | "normal" | "urgent"
+  created_by: string | null
+  created_at: string
+  updated_at: string
+  creator?: Profile
+  is_read?: boolean
+}
+
+export interface NotificationRead {
+  id: string
+  notification_id: string
+  user_id: string
+  read_at: string
+}
