@@ -241,6 +241,7 @@ export default async function DashboardPage() {
             notes={(todayNotes || []) as HandoverNote[]} 
             currentUserId={user.id}
             categories={(categories || []) as Category[]}
+            userRole={profile.role}
           />
         )}
       </div>

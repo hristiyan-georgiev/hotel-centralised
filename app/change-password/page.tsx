@@ -155,7 +155,7 @@ export default function ChangePasswordPage() {
                     />
                   </div>
                   {error && <p className="text-sm text-destructive bg-destructive/10 p-3 rounded-lg">{error}</p>}
-                  <Button type="submit" className="w-full" disabled={isLoading}>
+                  <Button type="submit" className="w-full cursor-pointer" disabled={isLoading}>
                     {isLoading ? "Changing Password..." : "Change Password"}
                   </Button>
                 </div>

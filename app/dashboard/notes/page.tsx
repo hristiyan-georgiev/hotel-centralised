@@ -112,6 +112,7 @@ export default async function NotesPage({ searchParams }: NotesPageProps) {
           notes={(notes || []) as HandoverNote[]} 
           currentUserId={user.id}
           categories={(categories || []) as Category[]}
+          userRole={profile.role}
         />
       )}
     </div>

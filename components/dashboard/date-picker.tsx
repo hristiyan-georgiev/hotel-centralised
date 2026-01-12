@@ -21,13 +21,13 @@ export function DatePicker({ selectedDate }: DatePickerProps) {
 
   return (
     <div className="flex items-center gap-2">
-      <Button variant="outline" size="icon" onClick={() => navigateToDate(subDays(date, 1))}>
+      <Button className="cursor-pointer" variant="outline" size="icon" onClick={() => navigateToDate(subDays(date, 1))}>
         <ChevronLeft className="h-4 w-4" />
       </Button>
 
       <Popover>
         <PopoverTrigger asChild>
-          <Button variant="outline" className="min-w-[200px] justify-start bg-transparent">
+          <Button variant="outline" className="min-w-[200px] justify-start bg-transparent cursor-pointer">
             <CalendarIcon className="mr-2 h-4 w-4" />
             {format(date, "EEEE, MMMM d, yyyy")}
           </Button>
@@ -38,6 +38,7 @@ export function DatePicker({ selectedDate }: DatePickerProps) {
       </Popover>
 
       <Button
+        className="cursor-pointer"
         variant="outline"
         size="icon"
         onClick={() => navigateToDate(addDays(date, 1))}
@@ -46,7 +47,7 @@ export function DatePicker({ selectedDate }: DatePickerProps) {
         <ChevronRight className="h-4 w-4" />
       </Button>
 
-      <Button variant="secondary" onClick={() => navigateToDate(new Date())} className="ml-2">
+      <Button variant="secondary" onClick={() => navigateToDate(new Date())} className="ml-2 cursor-pointer">
         Today
       </Button>
     </div>

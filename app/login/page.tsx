@@ -37,7 +37,7 @@ export default function LoginPage() {
         error: authError,
       } = await supabase.auth.getUser()
       if (authError || !user) {
-        redirect("/login")
+        throw new Error("Authentication failed")
       }
 
       const { data: profile } = await supabase
@@ -47,8 +47,9 @@ export default function LoginPage() {
         .single()
 
       if (!profile) {
-        redirect("/login")
+        throw new Error("Error with authentication - contact service provider for this account")
       }
+
 
       // Check if user needs to change password on first login
       if (profile.requires_password_change) {
@@ -111,7 +112,7 @@ export default function LoginPage() {
                     />
                   </div>
                   {error && <p className="text-sm text-destructive bg-destructive/10 p-3 rounded-lg">{error}</p>}
-                  <Button type="submit" className="w-full" disabled={isLoading}>
+                  <Button type="submit" className="w-full cursor-pointer" disabled={isLoading}>
                     {isLoading ? "Signing in..." : "Sign in"}
                   </Button>
                 </div>
@@ -120,16 +121,16 @@ export default function LoginPage() {
           </Card>
 
           <p className="text-sm text-muted-foreground text-center">Contact your manager if you need an account</p>
-       
-       <p className="text-xs text-muted-foreground text-center mt-6">Powered by</p>
-         <Image
-           src="/logo/playvenu-logo.png"
-           alt="Playvenu Logo"
-           width={120}
-           height={40}
-           className="object-contain"
-         />
-       
+
+          <p className="text-xs text-muted-foreground text-center mt-6">Powered by</p>
+          <Image
+            src="/logo/playvenu-logo.png"
+            alt="Playvenu Logo"
+            width={120}
+            height={40}
+            className="object-contain"
+          />
+
         </div>
       </div>
     </div>

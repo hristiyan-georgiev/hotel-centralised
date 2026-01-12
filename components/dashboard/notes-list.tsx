@@ -25,9 +25,10 @@ interface NotesListProps {
   notes: HandoverNote[]
   currentUserId: string
   categories: Category[]
+  userRole?: string
 }
 
-export function NotesList({ notes, currentUserId, categories }: NotesListProps) {
+export function NotesList({ notes, currentUserId, categories, userRole }: NotesListProps) {
   const router = useRouter()
   const [editNote, setEditNote] = useState<HandoverNote | null>(null)
   const [deleteNote, setDeleteNote] = useState<HandoverNote | null>(null)
@@ -115,7 +116,7 @@ export function NotesList({ notes, currentUserId, categories }: NotesListProps) 
                     </span>
                   </div>
                 </div>
-                {note.author_id === currentUserId && (
+                {(note.author_id === currentUserId || userRole === 'admin') && (
                   <div className="flex items-center gap-2 shrink-0">
                     <Button
                       variant="outline"
@@ -162,11 +163,11 @@ export function NotesList({ notes, currentUserId, categories }: NotesListProps) 
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel className="cursor-pointer">Cancel</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDelete}
               disabled={deleting}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90 cursor-pointer"
             >
               {deleting ? "Deleting..." : "Delete"}
             </AlertDialogAction>

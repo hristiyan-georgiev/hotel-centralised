@@ -7,6 +7,7 @@ DROP POLICY IF EXISTS "Users can update own profile" ON public.profiles;
 DROP POLICY IF EXISTS "Admins can manage all profiles" ON public.profiles;
 DROP POLICY IF EXISTS "Anyone can view categories" ON public.categories;
 DROP POLICY IF EXISTS "Admins can manage categories" ON public.categories;
+DROP POLICY IF EXISTS "Users can view all handover notes" ON public.handover_notes;
 DROP POLICY IF EXISTS "Users can view notes from their department" ON public.handover_notes;
 DROP POLICY IF EXISTS "Users can create notes for their department" ON public.handover_notes;
 DROP POLICY IF EXISTS "Users can update own notes" ON public.handover_notes;
@@ -104,10 +105,8 @@ CREATE POLICY "Admins can manage categories" ON public.categories
   FOR ALL TO authenticated USING (is_admin());
 
 -- Handover Notes
-CREATE POLICY "Users can view notes from their department" ON public.handover_notes
-  FOR SELECT TO authenticated USING (
-    department_id = get_my_department() OR is_admin()
-  );
+CREATE POLICY "Users can view all handover notes" ON public.handover_notes
+  FOR SELECT TO authenticated USING (true);
 
 CREATE POLICY "Users can create notes for their department" ON public.handover_notes
   FOR INSERT TO authenticated WITH CHECK (
