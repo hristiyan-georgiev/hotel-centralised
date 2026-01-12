@@ -10,10 +10,10 @@ import { Label } from "@/components/ui/label"
 import { useRouter } from "next/navigation"
 import { redirect } from "next/navigation"
 import { useState } from "react"
-import { Building2 } from "lucide-react"
+import Image from "next/image"
 
 export default function LoginPage() {
-  const [username, setUsername] = useState("")
+  const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
@@ -27,7 +27,7 @@ export default function LoginPage() {
 
     try {
       const { error } = await supabase.auth.signInWithPassword({
-        email: username,
+        email,
         password,
       })
       if (error) throw error
@@ -68,33 +68,34 @@ export default function LoginPage() {
     <div className="flex min-h-svh w-full items-center justify-center bg-secondary/30 p-6">
       <div className="w-full max-w-md">
         <div className="flex flex-col items-center gap-6">
-          <div className="flex items-center gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary">
-              <Building2 className="h-6 w-6 text-primary-foreground" />
-            </div>
-            <div>
-              <h1 className="text-xl font-semibold text-foreground">Hotel Handover</h1>
-              <p className="text-sm text-muted-foreground">Shift Management System</p>
-            </div>
+          <div className="flex items-center justify-center">
+            <Image
+              src="/logo/hobson.png"
+              alt="Hobson Logo"
+              width={200}
+              height={80}
+              className="object-contain"
+              priority
+            />
           </div>
 
           <Card className="w-full">
             <CardHeader className="text-center">
               <CardTitle className="text-2xl">Welcome back</CardTitle>
-              <CardDescription>Sign in to access your handover dashboard</CardDescription>
+              <CardDescription>Sign in to access your centralised dashboard</CardDescription>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleLogin}>
                 <div className="flex flex-col gap-4">
                   <div className="grid gap-2">
-                    <Label htmlFor="username">Username</Label>
+                    <Label htmlFor="username">Email</Label>
                     <Input
-                      id="username"
+                      id="email"
                       type="text"
-                      placeholder="Enter your username"
+                      placeholder="Enter your email"
                       required
-                      value={username}
-                      onChange={(e) => setUsername(e.target.value)}
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
                       autoComplete="username"
                     />
                   </div>
@@ -119,6 +120,16 @@ export default function LoginPage() {
           </Card>
 
           <p className="text-sm text-muted-foreground text-center">Contact your manager if you need an account</p>
+       
+       <p className="text-xs text-muted-foreground text-center mt-6">Powered by</p>
+         <Image
+           src="/logo/playvenu-logo.png"
+           alt="Playvenu Logo"
+           width={120}
+           height={40}
+           className="object-contain"
+         />
+       
         </div>
       </div>
     </div>
