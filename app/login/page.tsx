@@ -124,8 +124,8 @@ export default function LoginPage() {
 
           <p className="text-xs text-muted-foreground text-center mt-6">Powered by</p>
           <Image
-            src="/logo/playvenu-logo.png"
-            alt="Playvenu Logo"
+            src="/logo/logo-transparent.png"
+            alt="BoH Flow Logo"
             width={120}
             height={40}
             className="object-contain"

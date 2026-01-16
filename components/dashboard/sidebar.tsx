@@ -182,7 +182,7 @@ export function Sidebar({ profile }: SidebarProps) {
       <div className="flex flex-col h-16 px-6 items-left justify-center border-t">
         <p className="text-xs text-muted-foreground mb-1">Powered by</p>
         <Image
-          src="/logo/playvenu-logo.png"
+          src="/logo/logo-transparent.png"
           alt="Playvenu Logo"
           width={80}
           height={32}
