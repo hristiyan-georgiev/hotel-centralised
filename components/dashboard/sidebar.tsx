@@ -19,6 +19,8 @@ import {
   FileText,
   MessageSquareWarning,
   Bell,
+  CalendarClock,
+  BarChart3
 } from "lucide-react"
 import { useEffect, useState } from "react"
 
@@ -75,17 +77,20 @@ export function Sidebar({ profile }: SidebarProps) {
     { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
     { href: "/dashboard/notes", label: "Handover Notes", icon: ClipboardList },
     { href: "/dashboard/calendar", label: "Calendar View", icon: CalendarDays },
-    { href: "/dashboard/complaints", label: "Complaints", icon: MessageSquareWarning },
-    { href: "/dashboard/notifications", label: "Notifications", icon: Bell, badge: unreadCount }, // Added notifications link with badge
     { href: "/dashboard/resources", label: "Resources", icon: BookOpen },
+    { href: "/dashboard/complaints", label: "Complaints", icon: MessageSquareWarning },
+    { href: "/dashboard/notifications", label: "Notifications", icon: Bell, badge: unreadCount },
+    { href: "/dashboard/schedule", label: "Schedule", icon: CalendarClock }, // Added Schedule link
+      { href: "/dashboard/reports", label: "Reports", icon: BarChart3 }, // Added Reports link
   ]
 
   const adminLinks = [
     { href: "/admin", label: "Admin Dashboard", icon: Settings },
     { href: "/admin/users", label: "Manage Users", icon: Users },
     { href: "/admin/departments", label: "Departments", icon: Building2 },
-    { href: "/admin/notifications", label: "Manage Notifications", icon: Bell }, // Added admin notifications link
     { href: "/admin/resources", label: "Manage Resources", icon: FileText },
+    { href: "/admin/notifications", label: "Manage Notifications", icon: Bell },
+    { href: "/admin/schedule", label: "Manage Schedule", icon: CalendarClock }, // Added Manage Schedule link
   ]
 
   return (
@@ -174,16 +179,16 @@ export function Sidebar({ profile }: SidebarProps) {
         </Button>
       </div>
 
-        <div className="flex flex-col h-16 px-6 items-left justify-center border-t">
-  <p className="text-xs text-muted-foreground mb-1">Powered by</p>
-  <Image
-    src="/logo/playvenu-logo.png"
-    alt="Playvenu Logo"
-    width={80}
-    height={32}
-    className="object-contain"
-  />
-</div>
+      <div className="flex flex-col h-16 px-6 items-left justify-center border-t">
+        <p className="text-xs text-muted-foreground mb-1">Powered by</p>
+        <Image
+          src="/logo/playvenu-logo.png"
+          alt="Playvenu Logo"
+          width={80}
+          height={32}
+          className="object-contain"
+        />
+      </div>
 
     </aside>
   )

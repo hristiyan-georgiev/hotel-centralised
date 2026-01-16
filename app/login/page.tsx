@@ -83,7 +83,7 @@ export default function LoginPage() {
           <Card className="w-full">
             <CardHeader className="text-center">
               <CardTitle className="text-2xl">Welcome back</CardTitle>
-              <CardDescription>Sign in to access your centralised dashboard</CardDescription>
+              <CardDescription>Sign in to access the back-of-house dashboard</CardDescription>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleLogin}>
