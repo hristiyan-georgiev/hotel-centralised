@@ -105,7 +105,7 @@ export function AdminScheduleManager({ shifts, events, tasks, departments, staff
                   className="flex-1 sm:flex-none bg-transparent"
                 >
                   <Wand2 className="h-4 w-4 mr-2" />
-                  Auto-Generate Rota
+                  Auto-Generate Rota (In-Progress)
                 </Button>
                 <Button onClick={() => setShowCreateShift(true)} className="flex-1 sm:flex-none">
                   <Plus className="h-4 w-4 mr-2" />

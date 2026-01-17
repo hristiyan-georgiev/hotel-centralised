@@ -265,7 +265,7 @@ export function AutoScheduleGenerator({ open, onClose, departments, staffMembers
             <div>
               <DialogTitle className="flex items-center gap-2 text-xl">
                 <Wand2 className="h-5 w-5 text-primary" />
-                Auto-Generate Rota
+                Auto-Generate Rota (In-Progress)
               </DialogTitle>
               <DialogDescription className="mt-1">Step {currentStep} of {STEPS.length}: {STEPS[currentStep - 1].title}</DialogDescription>
             </div>
