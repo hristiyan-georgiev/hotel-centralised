@@ -31,7 +31,7 @@ export function CreateNoteButton({ profile, categories }: CreateNoteButtonProps)
 
   useEffect(() => {
     setCategoryId(categories[0]?.id || "")
-  })
+  }, [categories])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()

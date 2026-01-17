@@ -1,7 +1,8 @@
 import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
 import { ComplaintsList } from "@/components/complaints/complaints-list"
-import type { Complaint, Profile, Department } from "@/lib/types"
+import { CreateComplaintButton } from "@/components/complaints/create-complaint-button"
+import type { Complaint, Profile, Department, ComplaintTag } from "@/lib/types"
 
 export default async function ComplaintsPage() {
   const supabase = await createClient()
@@ -36,9 +37,22 @@ export default async function ComplaintsPage() {
     `)
     .order("created_at", { ascending: false })
 
+  // Fetch tags for each complaint
+  const complaintsWithTags = await Promise.all(
+    (complaints || []).map(async (complaint) => {
+      const { data: tagMappings } = await supabase
+        .from("complaint_tag_mappings")
+        .select("tag_id, complaint_tags(*)")
+        .eq("complaint_id", complaint.id)
+      
+      const tags = tagMappings?.map((mapping: any) => mapping.complaint_tags).filter(Boolean) || []
+      return { ...complaint, tags }
+    })
+  )
+
   // Get comment counts for each complaint
   const complaintsWithCounts = await Promise.all(
-    (complaints || []).map(async (complaint) => {
+    complaintsWithTags.map(async (complaint) => {
       const { count } = await supabase
         .from("complaint_comments")
         .select("*", { count: "exact", head: true })
@@ -53,11 +67,22 @@ export default async function ComplaintsPage() {
   // Fetch departments
   const { data: departments } = await supabase.from("departments").select("*").order("name")
 
+  // Fetch all available tags
+  const { data: availableTags } = await supabase.from("complaint_tags").select("*").order("name")
+
   return (
     <div className="p-6 space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Complaints</h1>
-        <p className="text-muted-foreground mt-1">Track and manage guest complaints and issues</p>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Complaints</h1>
+          <p className="text-muted-foreground mt-1">Track and manage guest complaints and issues</p>
+        </div>
+        <CreateComplaintButton
+          profile={profile as Profile}
+          staffMembers={(staffMembers as Profile[]) || []}
+          departments={(departments as Department[]) || []}
+          availableTags={(availableTags as ComplaintTag[]) || []}
+        />
       </div>
 
       <ComplaintsList
@@ -65,6 +90,7 @@ export default async function ComplaintsPage() {
         profile={profile as Profile}
         staffMembers={(staffMembers as Profile[]) || []}
         departments={(departments as Department[]) || []}
+        availableTags={(availableTags as ComplaintTag[]) || []}
       />
     </div>
   )

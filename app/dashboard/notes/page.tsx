@@ -55,49 +55,31 @@ export default async function NotesPage({ searchParams }: NotesPageProps) {
         )}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card className="border-blue-500/20 bg-gradient-to-br from-blue-500/5 to-transparent">
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-3xl font-bold text-blue-600">{totalNotes}</p>
-                <p className="text-sm font-medium text-muted-foreground mt-1">Total Notes</p>
-              </div>
-              <div className="p-3 rounded-xl bg-blue-500/10">
-                <ClipboardList className="h-6 w-6 text-blue-500" />
+      <div className="flex items-center gap-4 text-sm">
+            <div className="flex items-center gap-2 bg-blue-500/5 rounded-md">
+              <div className="flex items-center gap-1.5 text-muted-foreground p-1">
+                <ClipboardList className="h-4 w-4" />
+                <span className="font-medium text-foreground">{totalNotes}</span>
+                <span>notes</span>
               </div>
             </div>
-          </CardContent>
-        </Card>
-
-        <Card className="border-red-500/20 bg-gradient-to-br from-red-500/5 to-transparent">
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-3xl font-bold text-red-600">{urgentNotes}</p>
-                <p className="text-sm font-medium text-muted-foreground mt-1">Urgent Priority</p>
+            {urgentNotes > 0 && (
+              <div className="flex items-center gap-2 bg-red-500/5 rounded-md">
+                <div className="flex items-center gap-1.5 text-muted-foreground p-1">
+                  <AlertCircle className="h-4 w-4 text-red-500" />
+                  <span className="font-medium text-foreground">{urgentNotes}</span>
+                  <span>urgent</span>
+                </div>
               </div>
-              <div className="p-3 rounded-xl bg-red-500/10">
-                <AlertCircle className="h-6 w-6 text-red-500" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="border-emerald-500/20 bg-gradient-to-br from-emerald-500/5 to-transparent">
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-3xl font-bold text-emerald-600">{myNotes}</p>
-                <p className="text-sm font-medium text-muted-foreground mt-1">My Notes</p>
-              </div>
-              <div className="p-3 rounded-xl bg-emerald-500/10">
-                <TrendingUp className="h-6 w-6 text-emerald-500" />
+            )}
+            <div className="flex items-center gap-2 bg-green-500/5 rounded-md">
+              <div className="flex items-center gap-1.5 text-muted-foreground p-1">
+                <TrendingUp className="h-4 w-4" />
+                <span className="font-medium text-foreground">{myNotes}</span>
+                <span>by you</span>
               </div>
             </div>
-          </CardContent>
-        </Card>
-      </div>
+          </div>
 
       <DatePicker selectedDate={selectedDate} />
 

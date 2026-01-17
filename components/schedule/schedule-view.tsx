@@ -166,138 +166,119 @@ export function ScheduleView({ profile, shifts, events, tasks, departments, staf
   }
 
   return (
-    <div className="space-y-6">
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-transparent">
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 ring-1 ring-primary/20">
-                <CalendarDays className="h-6 w-6 text-primary" />
+    <div className="space-y-4">
+      {/* Stats and Filters Toolbar */}
+      <Card>
+        <CardContent className="p-4">
+          <div className="flex flex-col gap-4">
+            {/* Stats Row */}
+            <div className="flex items-center gap-6 pb-4 border-b">
+              <div className="flex items-center gap-2">
+                <CalendarDays className="h-4 w-4 text-primary" />
+                <span className="text-sm text-muted-foreground">My shifts:</span>
+                <Badge variant="secondary" className="font-semibold">{myShiftsThisWeek}</Badge>
               </div>
-              <div>
-                <p className="text-3xl font-bold text-primary">{myShiftsThisWeek}</p>
-                <p className="text-sm font-medium text-muted-foreground">My Shifts This Week</p>
+              <div className="flex items-center gap-2">
+                <AlertCircle className="h-4 w-4 text-amber-600" />
+                <span className="text-sm text-muted-foreground">Unconfirmed:</span>
+                <Badge variant={unacknowledgedShifts > 0 ? "destructive" : "secondary"} className="font-semibold">
+                  {unacknowledgedShifts}
+                </Badge>
               </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="border-amber-500/20 bg-gradient-to-br from-amber-500/5 to-transparent">
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-amber-500/10 ring-1 ring-amber-500/20">
-                <AlertCircle className="h-6 w-6 text-amber-600" />
-              </div>
-              <div>
-                <p className="text-3xl font-bold text-amber-600">{unacknowledgedShifts}</p>
-                <p className="text-sm font-medium text-muted-foreground">Unconfirmed Shifts</p>
+              <div className="flex items-center gap-2">
+                <Briefcase className="h-4 w-4 text-blue-600" />
+                <span className="text-sm text-muted-foreground">Pending tasks:</span>
+                <Badge variant="secondary" className="font-semibold">{pendingTasks}</Badge>
               </div>
             </div>
-          </CardContent>
-        </Card>
-        <Card className="border-blue-500/20 bg-gradient-to-br from-blue-500/5 to-transparent">
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-500/10 ring-1 ring-blue-500/20">
-                <Briefcase className="h-6 w-6 text-blue-600" />
-              </div>
-              <div>
-                <p className="text-3xl font-bold text-blue-600">{pendingTasks}</p>
-                <p className="text-sm font-medium text-muted-foreground">Pending Tasks</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
 
-      {/* Filters and View Toggle */}
-      <Card className="border-dashed">
-        <CardContent className="pt-6">
-      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-        <div className="flex flex-wrap gap-2 items-center">
-          <Filter className="h-4 w-4 text-muted-foreground" />
-          <Select value={filterDepartment} onValueChange={setFilterDepartment}>
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="All Departments" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Departments</SelectItem>
-              {departments.map((dept) => (
-                <SelectItem key={dept.id} value={dept.id}>
-                  {dept.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <Select value={filterStaff} onValueChange={setFilterStaff}>
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="All Staff" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Staff</SelectItem>
-              <SelectItem value={profile.id}>My Schedule</SelectItem>
-              {staffMembers
-                .filter((s) => s.id !== profile.id)
-                .map((staff) => (
-                  <SelectItem key={staff.id} value={staff.id}>
-                    {staff.full_name}
-                  </SelectItem>
-                ))}
-            </SelectContent>
-          </Select>
-        </div>
+            {/* Filters and View Toggle Row */}
+            <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
+              <div className="flex flex-wrap gap-2 items-center">
+                <Filter className="h-4 w-4 text-muted-foreground" />
+                <Select value={filterDepartment} onValueChange={setFilterDepartment}>
+                  <SelectTrigger className="w-[160px] h-9">
+                    <SelectValue placeholder="All Departments" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Departments</SelectItem>
+                    {departments.map((dept) => (
+                      <SelectItem key={dept.id} value={dept.id}>
+                        {dept.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Select value={filterStaff} onValueChange={setFilterStaff}>
+                  <SelectTrigger className="w-[160px] h-9">
+                    <SelectValue placeholder="All Staff" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Staff</SelectItem>
+                    <SelectItem value={profile.id}>My Schedule</SelectItem>
+                    {staffMembers
+                      .filter((s) => s.id !== profile.id)
+                      .map((staff) => (
+                        <SelectItem key={staff.id} value={staff.id}>
+                          {staff.full_name}
+                        </SelectItem>
+                      ))}
+                  </SelectContent>
+                </Select>
+              </div>
 
-        <div className="flex gap-2 items-center">
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button variant="outline" size="sm">
-                <CalendarIcon className="h-4 w-4 mr-2" />
-                Jump to date
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="end">
-              <Calendar
-                mode="single"
-                selected={selectedDate}
-                onSelect={(date) => {
-                  if (date) {
-                    setSelectedDate(date)
-                    setWeekStart(startOfWeek(date, { weekStartsOn: 1 }))
-                  }
-                }}
-                initialFocus
-              />
-            </PopoverContent>
-          </Popover>
-          <Tabs value={view} onValueChange={(v) => setView(v as "week" | "day")} className="hidden sm:block">
-            <TabsList>
-              <TabsTrigger value="week">Week</TabsTrigger>
-              <TabsTrigger value="day">Day</TabsTrigger>
-            </TabsList>
-          </Tabs>
-        </div>
-      </div>
+              <div className="flex gap-2 items-center">
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" size="sm">
+                      <CalendarIcon className="h-4 w-4 mr-2" />
+                      Jump to date
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="end">
+                    <Calendar
+                      mode="single"
+                      selected={selectedDate}
+                      onSelect={(date) => {
+                        if (date) {
+                          setSelectedDate(date)
+                          setWeekStart(startOfWeek(date, { weekStartsOn: 1 }))
+                        }
+                      }}
+                      initialFocus
+                    />
+                  </PopoverContent>
+                </Popover>
+                <Tabs value={view} onValueChange={(v) => setView(v as "week" | "day")}>
+                  <TabsList className="h-9">
+                    <TabsTrigger value="week" className="text-xs">Week</TabsTrigger>
+                    <TabsTrigger value="day" className="text-xs">Day</TabsTrigger>
+                  </TabsList>
+                </Tabs>
+              </div>
+            </div>
+          </div>
         </CardContent>
       </Card>
 
       {/* Week Navigation */}
-      <div className="flex items-center justify-between bg-secondary/30 rounded-lg p-4">
-        <Button variant="outline" size="default" onClick={() => setWeekStart(subWeeks(weekStart, 1))}>
+      <div className="flex items-center justify-between">
+        <Button variant="ghost" size="sm" onClick={() => setWeekStart(subWeeks(weekStart, 1))}>
           <ChevronLeft className="h-4 w-4 mr-2" />
-          Previous Week
+          Previous
         </Button>
-        <h2 className="text-xl font-bold">
+        <h2 className="text-lg font-semibold">
           {format(weekStart, "MMM d")} - {format(endOfWeek(weekStart, { weekStartsOn: 1 }), "MMM d, yyyy")}
         </h2>
-        <Button variant="outline" size="default" onClick={() => setWeekStart(addWeeks(weekStart, 1))}>
-          Next Week
+        <Button variant="ghost" size="sm" onClick={() => setWeekStart(addWeeks(weekStart, 1))}>
+          Next
           <ChevronRight className="h-4 w-4 ml-2" />
         </Button>
       </div>
 
       {/* Schedule Grid */}
       {view === "week" ? (
-        <div className="grid grid-cols-1 md:grid-cols-7 gap-2">
+        <div className="grid grid-cols-1 md:grid-cols-7 gap-3">
           {weekDays.map((day) => {
             const dayShifts = getShiftsForDate(day)
             const dayEvents = getEventsForDate(day)
@@ -306,23 +287,25 @@ export function ScheduleView({ profile, shifts, events, tasks, departments, staf
 
             return (
               <Card key={day.toISOString()} className={cn(
-                "min-h-[200px] transition-shadow hover:shadow-md",
-                isToday && "ring-2 ring-primary shadow-lg"
+                "min-h-[180px]",
+                isToday && "ring-2 ring-primary"
               )}>
-                <CardHeader className="py-3 px-3 border-b bg-secondary/20">
-                  <CardTitle className="text-sm font-semibold flex items-center justify-between">
-                    <span className={cn(isToday && "text-primary")}>{format(day, "EEE")}</span>
+                <CardHeader className="p-3 pb-2">
+                  <CardTitle className="flex items-center justify-between">
+                    <span className={cn("text-sm font-medium", isToday && "text-primary")}>
+                      {format(day, "EEE")}
+                    </span>
                     <span
                       className={cn(
-                        "flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold",
-                        isToday ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground",
+                        "flex h-7 w-7 items-center justify-center rounded-full text-sm font-semibold",
+                        isToday ? "bg-primary text-primary-foreground" : "text-muted-foreground",
                       )}
                     >
                       {format(day, "d")}
                     </span>
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="px-2 pb-2 space-y-1.5">
+                <CardContent className="p-3 pt-0 space-y-1.5">
                   {/* Shifts */}
                   {dayShifts.map((shift) => (
                     <button
@@ -331,20 +314,20 @@ export function ScheduleView({ profile, shifts, events, tasks, departments, staf
                       className={cn(
                         "w-full text-left p-2 rounded-md text-xs transition-colors",
                         shift.staff_id === profile.id
-                          ? "bg-primary/10 hover:bg-primary/20 border-l-2 border-primary"
-                          : "bg-secondary hover:bg-secondary/80",
-                        !shift.acknowledged && shift.staff_id === profile.id && "animate-pulse",
+                          ? "bg-primary/10 hover:bg-primary/15 border-l-2 border-primary"
+                          : "bg-muted/50 hover:bg-muted",
+                        !shift.acknowledged && shift.staff_id === profile.id && "ring-1 ring-primary/30",
                       )}
                     >
-                      <div className="flex items-center gap-1 font-medium">
-                        <Clock className="h-3 w-3" />
-                        {shift.start_time?.slice(0, 5)} - {shift.end_time?.slice(0, 5)}
+                      <div className="flex items-center gap-1.5 font-medium">
+                        <Clock className="h-3 w-3 shrink-0" />
+                        <span>{shift.start_time?.slice(0, 5)}-{shift.end_time?.slice(0, 5)}</span>
                       </div>
-                      <div className="truncate text-muted-foreground mt-0.5">
+                      <div className="truncate text-muted-foreground mt-1 text-[11px]">
                         {shift.staff?.full_name || "Unassigned"}
                       </div>
                       {shift.staff_id === profile.id && !shift.acknowledged && (
-                        <Badge variant="outline" className="mt-1 text-[10px] h-4">
+                        <Badge variant="outline" className="mt-1 text-[10px] h-4 bg-background">
                           Confirm
                         </Badge>
                       )}
@@ -356,14 +339,14 @@ export function ScheduleView({ profile, shifts, events, tasks, departments, staf
                     <button
                       key={event.id}
                       onClick={() => setSelectedEvent(event)}
-                      className="w-full text-left p-2 rounded-md text-xs bg-blue-500/10 hover:bg-blue-500/20 border-l-2 border-blue-500 transition-colors"
+                      className="w-full text-left p-2 rounded-md text-xs bg-blue-50 dark:bg-blue-950/20 hover:bg-blue-100 dark:hover:bg-blue-950/30 border-l-2 border-blue-500 transition-colors"
                     >
-                      <div className="flex items-center gap-1 font-medium text-blue-700 dark:text-blue-300">
-                        <Users className="h-3 w-3" />
-                        {event.title}
+                      <div className="flex items-center gap-1.5 font-medium text-blue-700 dark:text-blue-300">
+                        <Users className="h-3 w-3 shrink-0" />
+                        <span className="truncate">{event.title}</span>
                       </div>
                       {event.start_time && (
-                        <div className="text-muted-foreground mt-0.5">{event.start_time.slice(0, 5)}</div>
+                        <div className="text-muted-foreground mt-1 text-[11px]">{event.start_time.slice(0, 5)}</div>
                       )}
                     </button>
                   ))}
@@ -376,28 +359,28 @@ export function ScheduleView({ profile, shifts, events, tasks, departments, staf
                       className={cn(
                         "w-full text-left p-2 rounded-md text-xs transition-colors border-l-2",
                         task.status === "completed"
-                          ? "bg-green-500/10 border-green-500 opacity-60"
+                          ? "bg-green-50 dark:bg-green-950/20 border-green-500 opacity-70"
                           : task.priority === "urgent"
-                            ? "bg-destructive/10 border-destructive hover:bg-destructive/20"
-                            : "bg-amber-500/10 border-amber-500 hover:bg-amber-500/20",
+                            ? "bg-red-50 dark:bg-red-950/20 border-destructive hover:bg-red-100 dark:hover:bg-red-950/30"
+                            : "bg-amber-50 dark:bg-amber-950/20 border-amber-500 hover:bg-amber-100 dark:hover:bg-amber-950/30",
                       )}
                     >
-                      <div className="flex items-center gap-1 font-medium">
+                      <div className="flex items-center gap-1.5">
                         {task.status === "completed" ? (
-                          <CheckCircle2 className="h-3 w-3 text-green-500" />
+                          <CheckCircle2 className="h-3 w-3 text-green-600 shrink-0" />
                         ) : (
-                          <Circle className="h-3 w-3" />
+                          <Circle className="h-3 w-3 text-muted-foreground shrink-0" />
                         )}
-                        <span className="truncate">{task.title}</span>
+                        <span className="truncate font-medium">{task.title}</span>
                       </div>
                       {task.assignee && (
-                        <div className="text-muted-foreground mt-0.5 truncate">{task.assignee.full_name}</div>
+                        <div className="text-muted-foreground mt-1 truncate text-[11px]">{task.assignee.full_name}</div>
                       )}
                     </button>
                   ))}
 
                   {dayShifts.length === 0 && dayEvents.length === 0 && dayTasks.length === 0 && (
-                    <p className="text-xs text-muted-foreground text-center py-4">No items</p>
+                    <p className="text-xs text-muted-foreground text-center py-8">No items</p>
                   )}
                 </CardContent>
               </Card>
@@ -406,82 +389,82 @@ export function ScheduleView({ profile, shifts, events, tasks, departments, staf
         </div>
       ) : (
         /* Day View */
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center justify-between">
-              <span>{format(selectedDate, "EEEE, MMMM d, yyyy")}</span>
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    const prev = new Date(selectedDate)
-                    prev.setDate(prev.getDate() - 1)
-                    setSelectedDate(prev)
-                    setWeekStart(startOfWeek(prev, { weekStartsOn: 1 }))
-                  }}
-                >
-                  <ChevronLeft className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    const next = new Date(selectedDate)
-                    next.setDate(next.getDate() + 1)
-                    setSelectedDate(next)
-                    setWeekStart(startOfWeek(next, { weekStartsOn: 1 }))
-                  }}
-                >
-                  <ChevronRight className="h-4 w-4" />
-                </Button>
-              </div>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-6">
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-semibold">{format(selectedDate, "EEEE, MMMM d, yyyy")}</h2>
+            <div className="flex gap-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  const prev = new Date(selectedDate)
+                  prev.setDate(prev.getDate() - 1)
+                  setSelectedDate(prev)
+                  setWeekStart(startOfWeek(prev, { weekStartsOn: 1 }))
+                }}
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  const next = new Date(selectedDate)
+                  next.setDate(next.getDate() + 1)
+                  setSelectedDate(next)
+                  setWeekStart(startOfWeek(next, { weekStartsOn: 1 }))
+                }}
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+          <div className="space-y-4">
             {/* Shifts Section */}
-            <div>
-              <h3 className="text-sm font-semibold flex items-center gap-2 mb-3">
-                <Clock className="h-4 w-4" />
-                Shifts ({getShiftsForDate(selectedDate).length})
-              </h3>
-              <div className="space-y-2">
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-medium flex items-center gap-2">
+                  <Clock className="h-4 w-4 text-muted-foreground" />
+                  Shifts ({getShiftsForDate(selectedDate).length})
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
                 {getShiftsForDate(selectedDate).length === 0 ? (
-                  <p className="text-sm text-muted-foreground">No shifts scheduled</p>
+                  <p className="text-sm text-muted-foreground py-4">No shifts scheduled</p>
                 ) : (
                   getShiftsForDate(selectedDate).map((shift) => (
                     <button
                       key={shift.id}
                       onClick={() => setSelectedShift(shift)}
                       className={cn(
-                        "w-full text-left p-4 rounded-lg border transition-colors",
+                        "w-full text-left p-3 rounded-md border transition-colors",
                         shift.staff_id === profile.id
                           ? "border-primary bg-primary/5 hover:bg-primary/10"
-                          : "hover:bg-secondary",
+                          : "hover:bg-muted/50",
                       )}
                     >
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
-                            <User className="h-5 w-5 text-primary" />
+                      <div className="flex items-center justify-between gap-3">
+                        <div className="flex items-center gap-3 flex-1 min-w-0">
+                          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+                            <User className="h-4 w-4 text-primary" />
                           </div>
-                          <div>
-                            <p className="font-medium">{shift.staff?.full_name || "Unassigned"}</p>
-                            <p className="text-sm text-muted-foreground">
+                          <div className="flex-1 min-w-0">
+                            <p className="font-medium text-sm">{shift.staff?.full_name || "Unassigned"}</p>
+                            <p className="text-xs text-muted-foreground">
                               {shift.start_time?.slice(0, 5)} - {shift.end_time?.slice(0, 5)}
                               {shift.department && ` • ${shift.department.name}`}
                             </p>
                           </div>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <Badge variant={shift.shift_type === "regular" ? "secondary" : "outline"}>
+                        <div className="flex items-center gap-2 shrink-0">
+                          <Badge variant={shift.shift_type === "regular" ? "secondary" : "outline"} className="text-xs">
                             {shift.shift_type}
                           </Badge>
                           {shift.acknowledged ? (
-                            <CheckCircle2 className="h-5 w-5 text-green-500" />
+                            <CheckCircle2 className="h-4 w-4 text-green-600" />
                           ) : (
                             shift.staff_id === profile.id && (
-                              <Badge variant="destructive" className="animate-pulse">
+                              <Badge variant="destructive" className="text-xs">
                                 Confirm
                               </Badge>
                             )
@@ -491,90 +474,94 @@ export function ScheduleView({ profile, shifts, events, tasks, departments, staf
                     </button>
                   ))
                 )}
-              </div>
-            </div>
+              </CardContent>
+            </Card>
 
             {/* Events Section */}
-            <div>
-              <h3 className="text-sm font-semibold flex items-center gap-2 mb-3">
-                <Users className="h-4 w-4" />
-                Events ({getEventsForDate(selectedDate).length})
-              </h3>
-              <div className="space-y-2">
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-medium flex items-center gap-2">
+                  <Users className="h-4 w-4 text-muted-foreground" />
+                  Events ({getEventsForDate(selectedDate).length})
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
                 {getEventsForDate(selectedDate).length === 0 ? (
-                  <p className="text-sm text-muted-foreground">No events scheduled</p>
+                  <p className="text-sm text-muted-foreground py-4">No events scheduled</p>
                 ) : (
                   getEventsForDate(selectedDate).map((event) => (
                     <button
                       key={event.id}
                       onClick={() => setSelectedEvent(event)}
-                      className="w-full text-left p-4 rounded-lg border border-blue-500/30 bg-blue-500/5 hover:bg-blue-500/10 transition-colors"
+                      className="w-full text-left p-3 rounded-md border border-blue-200 dark:border-blue-900 bg-blue-50 dark:bg-blue-950/20 hover:bg-blue-100 dark:hover:bg-blue-950/30 transition-colors"
                     >
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="font-medium">{event.title}</p>
-                          <div className="flex items-center gap-3 text-sm text-muted-foreground mt-1">
+                      <div className="flex items-center justify-between gap-3">
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium text-sm">{event.title}</p>
+                          <div className="flex items-center gap-3 text-xs text-muted-foreground mt-1">
                             {event.start_time && (
                               <span className="flex items-center gap-1">
                                 <Clock className="h-3 w-3" />
                                 {event.start_time.slice(0, 5)}
-                                {event.end_time && ` - ${event.end_time.slice(0, 5)}`}
+                                {event.end_time && `-${event.end_time.slice(0, 5)}`}
                               </span>
                             )}
                             {event.location && (
-                              <span className="flex items-center gap-1">
+                              <span className="flex items-center gap-1 truncate">
                                 <MapPin className="h-3 w-3" />
                                 {event.location}
                               </span>
                             )}
                           </div>
                         </div>
-                        <Badge variant="outline">{event.event_type}</Badge>
+                        <Badge variant="outline" className="text-xs shrink-0">{event.event_type}</Badge>
                       </div>
                     </button>
                   ))
                 )}
-              </div>
-            </div>
+              </CardContent>
+            </Card>
 
             {/* Tasks Section */}
-            <div>
-              <h3 className="text-sm font-semibold flex items-center gap-2 mb-3">
-                <Briefcase className="h-4 w-4" />
-                Tasks ({getTasksForDate(selectedDate).length})
-              </h3>
-              <div className="space-y-2">
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-medium flex items-center gap-2">
+                  <Briefcase className="h-4 w-4 text-muted-foreground" />
+                  Tasks ({getTasksForDate(selectedDate).length})
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
                 {getTasksForDate(selectedDate).length === 0 ? (
-                  <p className="text-sm text-muted-foreground">No tasks due</p>
+                  <p className="text-sm text-muted-foreground py-4">No tasks due</p>
                 ) : (
                   getTasksForDate(selectedDate).map((task) => (
                     <button
                       key={task.id}
                       onClick={() => setSelectedTask(task)}
                       className={cn(
-                        "w-full text-left p-4 rounded-lg border transition-colors",
+                        "w-full text-left p-3 rounded-md border transition-colors",
                         task.status === "completed"
-                          ? "border-green-500/30 bg-green-500/5 opacity-60"
+                          ? "border-green-200 dark:border-green-900 bg-green-50 dark:bg-green-950/20 opacity-70"
                           : task.priority === "urgent"
-                            ? "border-destructive/30 bg-destructive/5 hover:bg-destructive/10"
-                            : "hover:bg-secondary",
+                            ? "border-red-200 dark:border-red-900 bg-red-50 dark:bg-red-950/20 hover:bg-red-100 dark:hover:bg-red-950/30"
+                            : "hover:bg-muted/50",
                       )}
                     >
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
+                      <div className="flex items-center justify-between gap-3">
+                        <div className="flex items-center gap-3 flex-1 min-w-0">
                           {task.status === "completed" ? (
-                            <CheckCircle2 className="h-5 w-5 text-green-500" />
+                            <CheckCircle2 className="h-4 w-4 text-green-600 shrink-0" />
                           ) : (
-                            <Circle className="h-5 w-5 text-muted-foreground" />
+                            <Circle className="h-4 w-4 text-muted-foreground shrink-0" />
                           )}
-                          <div>
-                            <p className="font-medium">{task.title}</p>
-                            <p className="text-sm text-muted-foreground">
-                              Assigned to: {task.assignee?.full_name || "Unassigned"}
+                          <div className="flex-1 min-w-0">
+                            <p className="font-medium text-sm">{task.title}</p>
+                            <p className="text-xs text-muted-foreground truncate">
+                              {task.assignee?.full_name || "Unassigned"}
                             </p>
                           </div>
                         </div>
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 shrink-0">
                           <Badge
                             variant={
                               task.priority === "urgent"
@@ -583,19 +570,20 @@ export function ScheduleView({ profile, shifts, events, tasks, departments, staf
                                   ? "secondary"
                                   : "default"
                             }
+                            className="text-xs"
                           >
                             {task.priority}
                           </Badge>
-                          <Badge variant="outline">{task.status.replace("_", " ")}</Badge>
+                          <Badge variant="outline" className="text-xs">{task.status.replace("_", " ")}</Badge>
                         </div>
                       </div>
                     </button>
                   ))
                 )}
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
       )}
 
       {/* Detail Dialogs */}

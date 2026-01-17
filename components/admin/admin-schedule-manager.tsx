@@ -4,7 +4,7 @@ import { useState } from "react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { CalendarDays, Users, Briefcase, Plus } from "lucide-react"
+import { CalendarDays, Users, Briefcase, Plus, Wand2 } from "lucide-react"
 import type { Profile, Department, Shift, ScheduleEvent, ScheduleTask } from "@/lib/types"
 import { AdminShiftsList } from "./admin-shifts-list"
 import { AdminEventsList } from "./admin-events-list"
@@ -12,6 +12,7 @@ import { AdminTasksList } from "./admin-tasks-list"
 import { CreateShiftDialog } from "./create-shift-dialog"
 import { CreateEventDialog } from "./create-event-dialog"
 import { CreateTaskDialog } from "./create-task-dialog"
+import { AutoScheduleGenerator } from "./auto-schedule-generator"
 
 interface AdminScheduleManagerProps {
   shifts: Shift[]
@@ -26,6 +27,7 @@ export function AdminScheduleManager({ shifts, events, tasks, departments, staff
   const [showCreateShift, setShowCreateShift] = useState(false)
   const [showCreateEvent, setShowCreateEvent] = useState(false)
   const [showCreateTask, setShowCreateTask] = useState(false)
+  const [showAutoSchedule, setShowAutoSchedule] = useState(false)
 
   const upcomingShifts = shifts.filter((s) => new Date(s.shift_date) >= new Date()).length
   const upcomingEvents = events.filter((e) => new Date(e.event_date) >= new Date()).length
@@ -78,40 +80,52 @@ export function AdminScheduleManager({ shifts, events, tasks, departments, staff
 
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4">
           <TabsList>
             <TabsTrigger value="shifts" className="gap-2">
               <CalendarDays className="h-4 w-4" />
-              Shifts
+              <span className="hidden sm:inline">Shifts</span>
             </TabsTrigger>
             <TabsTrigger value="events" className="gap-2">
               <Users className="h-4 w-4" />
-              Events
+              <span className="hidden sm:inline">Events</span>
             </TabsTrigger>
             <TabsTrigger value="tasks" className="gap-2">
               <Briefcase className="h-4 w-4" />
-              Tasks
+              <span className="hidden sm:inline">Tasks</span>
             </TabsTrigger>
           </TabsList>
 
-          {activeTab === "shifts" && (
-            <Button onClick={() => setShowCreateShift(true)}>
-              <Plus className="h-4 w-4 mr-2" />
-              Add Shift
-            </Button>
-          )}
-          {activeTab === "events" && (
-            <Button onClick={() => setShowCreateEvent(true)}>
-              <Plus className="h-4 w-4 mr-2" />
-              Add Event
-            </Button>
-          )}
-          {activeTab === "tasks" && (
-            <Button onClick={() => setShowCreateTask(true)}>
-              <Plus className="h-4 w-4 mr-2" />
-              Add Task
-            </Button>
-          )}
+          <div className="flex gap-2 w-full sm:w-auto">
+            {activeTab === "shifts" && (
+              <>
+                <Button
+                  variant="outline"
+                  onClick={() => setShowAutoSchedule(true)}
+                  className="flex-1 sm:flex-none bg-transparent"
+                >
+                  <Wand2 className="h-4 w-4 mr-2" />
+                  Auto-Generate Rota
+                </Button>
+                <Button onClick={() => setShowCreateShift(true)} className="flex-1 sm:flex-none">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Shift
+                </Button>
+              </>
+            )}
+            {activeTab === "events" && (
+              <Button onClick={() => setShowCreateEvent(true)} className="flex-1 sm:flex-none">
+                <Plus className="h-4 w-4 mr-2" />
+                Add Event
+              </Button>
+            )}
+            {activeTab === "tasks" && (
+              <Button onClick={() => setShowCreateTask(true)} className="flex-1 sm:flex-none">
+                <Plus className="h-4 w-4 mr-2" />
+                Add Task
+              </Button>
+            )}
+          </div>
         </div>
 
         <TabsContent value="shifts">
@@ -136,6 +150,12 @@ export function AdminScheduleManager({ shifts, events, tasks, departments, staff
       <CreateTaskDialog
         open={showCreateTask}
         onClose={() => setShowCreateTask(false)}
+        departments={departments}
+        staffMembers={staffMembers}
+      />
+      <AutoScheduleGenerator
+        open={showAutoSchedule}
+        onClose={() => setShowAutoSchedule(false)}
         departments={departments}
         staffMembers={staffMembers}
       />

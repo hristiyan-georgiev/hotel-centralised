@@ -1,7 +1,7 @@
 import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
 import { ComplaintsReportView } from "@/components/reports/complaints-report-view"
-import type { Complaint, Profile, Department } from "@/lib/types"
+import type { Complaint, Profile, Department, ComplaintTag } from "@/lib/types"
 
 export default async function ReportsPage() {
   const supabase = await createClient()
@@ -36,8 +36,24 @@ export default async function ReportsPage() {
     `)
     .order("created_at", { ascending: false })
 
+  // Fetch tags for each complaint
+  const complaintsWithTags = await Promise.all(
+    (complaints || []).map(async (complaint) => {
+      const { data: tagMappings } = await supabase
+        .from("complaint_tag_mappings")
+        .select("tag_id, complaint_tags(*)")
+        .eq("complaint_id", complaint.id)
+      
+      const tags = tagMappings?.map((mapping: any) => mapping.complaint_tags).filter(Boolean) || []
+      return { ...complaint, tags }
+    })
+  )
+
   // Fetch departments for filtering
   const { data: departments } = await supabase.from("departments").select("*").order("name")
+
+  // Fetch all available tags
+  const { data: availableTags } = await supabase.from("complaint_tags").select("*").order("name")
 
   return (
     <div className="space-y-6 p-4">
@@ -47,8 +63,9 @@ export default async function ReportsPage() {
       </div>
 
       <ComplaintsReportView
-        complaints={(complaints as Complaint[]) || []}
+        complaints={(complaintsWithTags as Complaint[]) || []}
         departments={(departments as Department[]) || []}
+        availableTags={(availableTags as ComplaintTag[]) || []}
         profile={profile as Profile}
       />
     </div>

@@ -74,52 +74,52 @@ export function NotesList({ notes, currentUserId, categories, userRole }: NotesL
 
   return (
     <>
-      <div className="space-y-4">
+      <div className="space-y-3">
         {notes.map((note) => (
-          <Card key={note.id} className="overflow-hidden hover:shadow-md transition-shadow group">
-            <CardHeader className="pb-3">
-              <div className="flex items-start justify-between gap-4">
+          <Card key={note.id} className="overflow-hidden hover:border-foreground/20 transition-colors group">
+            <CardContent className="p-5">
+              <div className="flex items-start justify-between gap-4 mb-3">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap mb-2">
-                    <h3 className="font-semibold text-lg text-foreground">{note.title}</h3>
-                    <Badge variant="outline" className={`${priorityStyles[note.priority]} font-medium`}>
-                      {note.priority === "urgent" && <AlertTriangle className="h-3 w-3 mr-1" />}
-                      {note.priority.charAt(0).toUpperCase() + note.priority.slice(1)}
-                    </Badge>
+                    <h3 className="font-medium text-base text-foreground">{note.title}</h3>
+                    {note.priority === "urgent" && (
+                      <Badge variant="outline" className={`${priorityStyles[note.priority]} text-xs font-medium`}>
+                        <AlertTriangle className="h-3 w-3 mr-1" />
+                        Urgent
+                      </Badge>
+                    )}
                     {note.category && (
                       <Badge
                         variant="secondary"
                         style={{
-                          backgroundColor: `${note.category.color}20`,
+                          backgroundColor: `${note.category.color}15`,
                           color: note.category.color,
-                          borderColor: `${note.category.color}40`,
+                          borderColor: `${note.category.color}30`,
                         }}
-                        className="border"
+                        className="border text-xs"
                       >
                         {note.category.name}
                       </Badge>
                     )}
                   </div>
-                  <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                    <span className="flex items-center gap-1.5">
-                      <User className="h-3.5 w-3.5" />
-                      <span className="font-medium">{note.author?.full_name}</span>
+                  <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                    <span className="flex items-center gap-1">
+                      <User className="h-3 w-3" />
+                      {note.author?.full_name}
                     </span>
-                    <span className="flex items-center gap-1.5">
-                      <Clock className="h-3.5 w-3.5" />
-                      <span>
-                        {new Date(note.created_at).toLocaleTimeString("en-US", {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })}
-                      </span>
+                    <span className="flex items-center gap-1">
+                      <Clock className="h-3 w-3" />
+                      {new Date(note.created_at).toLocaleTimeString("en-US", {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
                     </span>
                   </div>
                 </div>
-                {(note.author_id === currentUserId || userRole === 'admin') && (
-                  <div className="flex items-center gap-2 shrink-0">
+                {(userRole === 'admin' || userRole === 'manager') && (
+                  <div className="flex items-center gap-1 shrink-0">
                     <Button
-                      variant="outline"
+                      variant="ghost"
                       size="icon"
                       className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
                       onClick={() => setEditNote(note)}
@@ -127,7 +127,7 @@ export function NotesList({ notes, currentUserId, categories, userRole }: NotesL
                       <Pencil className="h-3.5 w-3.5" />
                     </Button>
                     <Button
-                      variant="outline"
+                      variant="ghost"
                       size="icon"
                       className="h-8 w-8 text-destructive hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
                       onClick={() => setDeleteNote(note)}
@@ -137,9 +137,7 @@ export function NotesList({ notes, currentUserId, categories, userRole }: NotesL
                   </div>
                 )}
               </div>
-            </CardHeader>
-            <CardContent className="pt-0">
-              <p className="text-sm text-foreground/90 whitespace-pre-wrap leading-relaxed">{note.content}</p>
+              <p className="text-sm text-foreground/80 whitespace-pre-wrap leading-relaxed">{note.content}</p>
             </CardContent>
           </Card>
         ))}

@@ -50,6 +50,13 @@ export interface Resource {
   creator?: Profile
 }
 
+export interface ComplaintTag {
+  id: string
+  name: string
+  color: string
+  created_at: string
+}
+
 export interface Complaint {
   id: string
   title: string
@@ -71,6 +78,7 @@ export interface Complaint {
   department?: Department
   comments?: ComplaintComment[]
   comment_count?: number
+  tags?: ComplaintTag[]
 }
 
 export interface ComplaintComment {

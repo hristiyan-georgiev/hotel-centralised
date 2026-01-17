@@ -23,16 +23,18 @@ import {
   Activity,
 } from "lucide-react"
 import { format, subDays, startOfMonth, endOfMonth, isWithinInterval, differenceInHours } from "date-fns"
-import type { Complaint, Department, Profile } from "@/lib/types"
+import type { Complaint, Department, Profile, ComplaintTag } from "@/lib/types"
 import { cn } from "@/lib/utils"
 import { ComplaintsChart } from "./complaints-chart"
 import { PriorityChart } from "./priority-chart"
 import { DepartmentChart } from "./department-chart"
 import { ResolutionTimeChart } from "./resolution-time-chart"
+import { TagsChart } from "./tags-chart"
 
 interface ComplaintsReportViewProps {
   complaints: Complaint[]
   departments: Department[]
+  availableTags: ComplaintTag[]
   profile: Profile
 }
 
@@ -41,7 +43,7 @@ type DateRange = {
   to: Date | undefined
 }
 
-export function ComplaintsReportView({ complaints, departments, profile }: ComplaintsReportViewProps) {
+export function ComplaintsReportView({ complaints, departments, availableTags, profile }: ComplaintsReportViewProps) {
   const [dateRange, setDateRange] = useState<DateRange>({
     from: subDays(new Date(), 30),
     to: new Date(),
@@ -166,7 +168,23 @@ export function ComplaintsReportView({ complaints, departments, profile }: Compl
     })
     const resolutionTimeData = Object.entries(resolutionBuckets).map(([name, value]) => ({ name, value }))
 
-    return { timelineData, priorityData, departmentData, resolutionTimeData }
+    // Tag breakdown
+    const tagCounts: Record<string, { count: number; color: string }> = {}
+    filteredComplaints.forEach((c) => {
+      if (c.tags && c.tags.length > 0) {
+        c.tags.forEach((tag) => {
+          if (!tagCounts[tag.name]) {
+            tagCounts[tag.name] = { count: 0, color: tag.color }
+          }
+          tagCounts[tag.name].count++
+        })
+      }
+    })
+    const tagsData = Object.entries(tagCounts)
+      .map(([name, data]) => ({ name, value: data.count, color: data.color }))
+      .sort((a, b) => b.value - a.value)
+
+    return { timelineData, priorityData, departmentData, resolutionTimeData, tagsData }
   }, [filteredComplaints])
 
   // Export functions
@@ -500,6 +518,10 @@ export function ComplaintsReportView({ complaints, departments, profile }: Compl
               <Clock className="h-4 w-4" />
               <span className="hidden sm:inline">Resolution</span>
             </TabsTrigger>
+            <TabsTrigger value="tags" className="gap-2">
+              <PieChart className="h-4 w-4" />
+              <span className="hidden sm:inline">Tags</span>
+            </TabsTrigger>
           </TabsList>
 
           <div className="flex gap-2">
@@ -560,6 +582,18 @@ export function ComplaintsReportView({ complaints, departments, profile }: Compl
             </CardHeader>
             <CardContent>
               <ResolutionTimeChart data={chartData.resolutionTimeData} />
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="tags">
+          <Card>
+            <CardHeader>
+              <CardTitle>Complaints by Type</CardTitle>
+              <CardDescription>Distribution of complaints across different categories</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <TagsChart data={chartData.tagsData} />
             </CardContent>
           </Card>
         </TabsContent>

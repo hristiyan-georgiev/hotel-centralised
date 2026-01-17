@@ -18,7 +18,7 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { toast } from "sonner"
-import type { Profile, Department } from "@/lib/types"
+import type { Profile, Department, ComplaintTag } from "@/lib/types"
 
 interface CreateComplaintDialogProps {
   open: boolean
@@ -26,6 +26,7 @@ interface CreateComplaintDialogProps {
   profile: Profile
   staffMembers: Profile[]
   departments: Department[]
+  availableTags: ComplaintTag[]
   onSuccess: () => void
 }
 
@@ -35,9 +36,11 @@ export function CreateComplaintDialog({
   profile,
   staffMembers,
   departments,
+  availableTags,
   onSuccess,
 }: CreateComplaintDialogProps) {
   const [loading, setLoading] = useState(false)
+  const [selectedTags, setSelectedTags] = useState<string[]>([])
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -54,7 +57,7 @@ export function CreateComplaintDialog({
 
     const supabase = createClient()
 
-    const { error } = await supabase.from("complaints").insert({
+    const { data: complaint, error } = await supabase.from("complaints").insert({
       title: formData.title,
       description: formData.description,
       guest_name: formData.guest_name || null,
@@ -63,28 +66,41 @@ export function CreateComplaintDialog({
       assigned_to: formData.assigned_to || null,
       department_id: formData.department_id || null,
       created_by: profile.id,
-    })
-
-    setLoading(false)
+    }).select().single()
 
     if (error) {
+      setLoading(false)
       toast.error("Failed to create complaint", {
         description: error.message
       })
-    } else {
-      toast.success("Complaint created successfully")
-      setFormData({
-        title: "",
-        description: "",
-        guest_name: "",
-        room_number: "",
-        priority: "normal",
-        assigned_to: "",
-        department_id: profile.department_id || "",
-      })
-      onOpenChange(false)
-      onSuccess()
+      return
     }
+
+    if (complaint && selectedTags.length > 0) {
+      const tagMappings = selectedTags.map(tagId => ({
+        complaint_id: complaint.id,
+        tag_id: tagId
+      }))
+      const { error: tagError } = await supabase.from("complaint_tag_mappings").insert(tagMappings)
+      if (tagError) {
+        console.error("Failed to add tags:", tagError)
+      }
+    }
+
+    setLoading(false)
+    toast.success("Complaint created successfully")
+    setFormData({
+      title: "",
+      description: "",
+      guest_name: "",
+      room_number: "",
+      priority: "normal",
+      assigned_to: "",
+      department_id: profile.department_id || "",
+    })
+    setSelectedTags([])
+    onOpenChange(false)
+    onSuccess()
   }
 
   return (
@@ -194,6 +210,42 @@ export function CreateComplaintDialog({
                 ))}
               </SelectContent>
             </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Label>Tags</Label>
+            <div className="flex flex-wrap gap-2 p-3 border rounded-lg min-h-[42px]">
+              {availableTags.map((tag) => {
+                const isSelected = selectedTags.includes(tag.id)
+                return (
+                  <button
+                    key={tag.id}
+                    type="button"
+                    onClick={() => {
+                      setSelectedTags(
+                        isSelected
+                          ? selectedTags.filter((id) => id !== tag.id)
+                          : [...selectedTags, tag.id]
+                      )
+                    }}
+                    className={`px-3 py-1 rounded-md text-sm font-medium transition-all cursor-pointer ${
+                      isSelected
+                        ? "opacity-100 scale-100"
+                        : "opacity-60 hover:opacity-100 scale-95 hover:scale-100"
+                    }`}
+                    style={{
+                      backgroundColor: isSelected ? tag.color + "20" : tag.color + "10",
+                      borderColor: tag.color,
+                      color: tag.color,
+                      borderWidth: "1px",
+                      borderStyle: "solid"
+                    }}
+                  >
+                    {tag.name}
+                  </button>
+                )
+              })}
+            </div>
           </div>
 
           <DialogFooter>
