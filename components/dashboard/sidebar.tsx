@@ -20,7 +20,8 @@ import {
   MessageSquareWarning,
   Bell,
   CalendarClock,
-  BarChart3
+  BarChart3,
+  AlertCircle
 } from "lucide-react"
 import { useEffect, useState } from "react"
 
@@ -79,6 +80,7 @@ export function Sidebar({ profile }: SidebarProps) {
     { href: "/dashboard/calendar", label: "Calendar View", icon: CalendarDays },
     { href: "/dashboard/resources", label: "Resources", icon: BookOpen },
     { href: "/dashboard/complaints", label: "Complaints", icon: MessageSquareWarning },
+    { href: "/dashboard/issues", label: "Issues", icon: AlertCircle },
     { href: "/dashboard/notifications", label: "Notifications", icon: Bell, badge: unreadCount },
     { href: "/dashboard/schedule", label: "Schedule", icon: CalendarClock }, // Added Schedule link
       { href: "/dashboard/reports", label: "Reports", icon: BarChart3 }, // Added Reports link

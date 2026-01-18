@@ -176,3 +176,29 @@ export interface ScheduleTask {
   department?: Department
   creator?: Profile
 }
+
+export interface Issue {
+  id: string
+  title: string
+  description: string
+  status: "open" | "resolved"
+  priority: "low" | "normal" | "urgent"
+  resolved_by: string | null
+  resolved_at: string | null
+  created_by: string | null
+  created_at: string
+  updated_at: string
+  creator?: Profile
+  resolver?: Profile
+  comments?: IssueComment[]
+  comment_count?: number
+}
+
+export interface IssueComment {
+  id: string
+  issue_id: string
+  author_id: string | null
+  content: string
+  created_at: string
+  author?: Profile
+}
