@@ -99,7 +99,7 @@ export function generateScheduleOptions(input: ScheduleGeneratorInput): Schedule
     const employeeShiftCounts: Record<string, Record<string, number>> = {}
     const employeeLastShiftEnd: Record<string, Date | null> = {}
 
-    // Initialize tracking
+    // Initialise tracking
     employeeConfigs.forEach((e) => {
       employeeHours[e.id] = 0
       employeeShiftCounts[e.id] = {}
@@ -139,7 +139,7 @@ export function generateScheduleOptions(input: ScheduleGeneratorInput): Schedule
         let employeesToSchedule: EmployeeConfig[] = []
 
         if (optionIndex === 0) {
-          // Option 1: Balanced Distribution - prioritize rotation and even hours
+          // Option 1: Balanced Distribution - prioritise rotation and even hours
           employeesToSchedule = [...availableEmployees].sort((a, b) => {
             // Primary: Rotate shift types - prefer those who haven't worked this shift type
             const shiftTypeDiff = employeeShiftCounts[a.id][shiftDef.id] - employeeShiftCounts[b.id][shiftDef.id]
@@ -157,7 +157,7 @@ export function generateScheduleOptions(input: ScheduleGeneratorInput): Schedule
         } else if (optionIndex === 1) {
           // Option 2: Maximum Coverage - more staff, with rotation
           employeesToSchedule = [...availableEmployees].sort((a, b) => {
-            // Primary: Balance hours to maximize coverage
+            // Primary: Balance hours to maximise coverage
             const hoursDiff = employeeHours[a.id] - employeeHours[b.id]
             if (Math.abs(hoursDiff) > 6) return hoursDiff
             

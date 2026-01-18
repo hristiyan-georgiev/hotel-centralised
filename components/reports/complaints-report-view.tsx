@@ -315,7 +315,7 @@ export function ComplaintsReportView({ complaints, departments, availableTags, p
       <Card>
         <CardHeader>
           <CardTitle className="text-lg">Report Filters</CardTitle>
-          <CardDescription>Customize your report by selecting filters below</CardDescription>
+          <CardDescription>Customise your report by selecting filters below</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
@@ -327,7 +327,7 @@ export function ComplaintsReportView({ complaints, departments, availableTags, p
                   <Button
                     variant="outline"
                     className={cn(
-                      "w-full justify-start text-left font-normal",
+                      "w-full justify-start text-left font-normal cursor-pointer",
                       !dateRange.from && "text-muted-foreground",
                     )}
                   >
@@ -353,9 +353,11 @@ export function ComplaintsReportView({ complaints, departments, availableTags, p
                     selected={dateRange}
                     onSelect={(range) => setDateRange({ from: range?.from, to: range?.to })}
                     numberOfMonths={2}
+                    className="[&_button]:cursor-pointer"
                   />
                   <div className="flex gap-2 p-3 border-t">
                     <Button
+                      className="cursor-pointer"
                       variant="outline"
                       size="sm"
                       onClick={() => setDateRange({ from: subDays(new Date(), 7), to: new Date() })}
@@ -363,6 +365,7 @@ export function ComplaintsReportView({ complaints, departments, availableTags, p
                       Last 7 days
                     </Button>
                     <Button
+                      className="cursor-pointer"
                       variant="outline"
                       size="sm"
                       onClick={() => setDateRange({ from: subDays(new Date(), 30), to: new Date() })}
@@ -370,6 +373,7 @@ export function ComplaintsReportView({ complaints, departments, availableTags, p
                       Last 30 days
                     </Button>
                     <Button
+                      className="cursor-pointer"
                       variant="outline"
                       size="sm"
                       onClick={() => setDateRange({ from: startOfMonth(new Date()), to: endOfMonth(new Date()) })}
@@ -385,13 +389,13 @@ export function ComplaintsReportView({ complaints, departments, availableTags, p
             <div className="space-y-2">
               <Label>Status</Label>
               <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger>
+                <SelectTrigger className="cursor-pointer">
                   <SelectValue placeholder="All statuses" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Statuses</SelectItem>
-                  <SelectItem value="open">Open</SelectItem>
-                  <SelectItem value="resolved">Resolved</SelectItem>
+                  <SelectItem className="cursor-pointer" value="all">All Statuses</SelectItem>
+                  <SelectItem className="cursor-pointer" value="open">Open</SelectItem>
+                  <SelectItem className="cursor-pointer" value="resolved">Resolved</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -400,14 +404,14 @@ export function ComplaintsReportView({ complaints, departments, availableTags, p
             <div className="space-y-2">
               <Label>Priority</Label>
               <Select value={priorityFilter} onValueChange={setPriorityFilter}>
-                <SelectTrigger>
+                <SelectTrigger className="cursor-pointer">
                   <SelectValue placeholder="All priorities" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Priorities</SelectItem>
-                  <SelectItem value="urgent">Urgent</SelectItem>
-                  <SelectItem value="normal">Normal</SelectItem>
-                  <SelectItem value="low">Low</SelectItem>
+                  <SelectItem className="cursor-pointer" value="all">All Priorities</SelectItem>
+                  <SelectItem className="cursor-pointer" value="urgent">Urgent</SelectItem>
+                  <SelectItem className="cursor-pointer" value="normal">Normal</SelectItem>
+                  <SelectItem className="cursor-pointer" value="low">Low</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -416,13 +420,13 @@ export function ComplaintsReportView({ complaints, departments, availableTags, p
             <div className="space-y-2">
               <Label>Department</Label>
               <Select value={departmentFilter} onValueChange={setDepartmentFilter}>
-                <SelectTrigger>
+                <SelectTrigger className="cursor-pointer">
                   <SelectValue placeholder="All departments" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Departments</SelectItem>
+                  <SelectItem className="cursor-pointer" value="all">All Departments</SelectItem>
                   {departments.map((dept) => (
-                    <SelectItem key={dept.id} value={dept.id}>
+                    <SelectItem className="cursor-pointer" key={dept.id} value={dept.id}>
                       {dept.name}
                     </SelectItem>
                   ))}
@@ -502,34 +506,34 @@ export function ComplaintsReportView({ complaints, departments, availableTags, p
       <Tabs defaultValue="timeline" className="space-y-4">
         <div className="flex flex-col sm:flex-row justify-between gap-4">
           <TabsList className="w-full sm:w-auto">
-            <TabsTrigger value="timeline" className="gap-2">
+            <TabsTrigger value="timeline" className="gap-2 cursor-pointer">
               <Activity className="h-4 w-4" />
               <span className="hidden sm:inline">Timeline</span>
             </TabsTrigger>
-            <TabsTrigger value="priority" className="gap-2">
+            <TabsTrigger value="priority" className="gap-2 cursor-pointer">
               <PieChart className="h-4 w-4" />
               <span className="hidden sm:inline">Priority</span>
             </TabsTrigger>
-            <TabsTrigger value="department" className="gap-2">
+            <TabsTrigger value="department" className="gap-2 cursor-pointer">
               <BarChart3 className="h-4 w-4" />
               <span className="hidden sm:inline">Department</span>
             </TabsTrigger>
-            <TabsTrigger value="resolution" className="gap-2">
+            <TabsTrigger value="resolution" className="gap-2 cursor-pointer">
               <Clock className="h-4 w-4" />
               <span className="hidden sm:inline">Resolution</span>
             </TabsTrigger>
-            <TabsTrigger value="tags" className="gap-2">
+            <TabsTrigger value="tags" className="gap-2 cursor-pointer">
               <PieChart className="h-4 w-4" />
               <span className="hidden sm:inline">Tags</span>
             </TabsTrigger>
           </TabsList>
 
           <div className="flex gap-2">
-            <Button variant="outline" size="sm" onClick={exportToCSV}>
+            <Button className="cursor-pointer" variant="outline" size="sm" onClick={exportToCSV}>
               <FileSpreadsheet className="h-4 w-4 mr-2" />
               Export CSV
             </Button>
-            <Button variant="outline" size="sm" onClick={exportToPDF}>
+            <Button className="cursor-pointer" variant="outline" size="sm" onClick={exportToPDF}>
               <FileText className="h-4 w-4 mr-2" />
               Export PDF
             </Button>

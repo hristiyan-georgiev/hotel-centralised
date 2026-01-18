@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server"
 import type { Profile, Issue } from "@/lib/types"
 import { IssuesList } from "@/components/issues/issues-list"
 import { CreateIssueButton } from "@/components/issues/create-issue-button"
+import { AlertCircle } from "lucide-react"
 
 export default async function IssuesPage() {
   const supabase = await createClient()
@@ -52,12 +53,17 @@ export default async function IssuesPage() {
   return (
     <div className="h-screen overflow-auto">
       <div className="w-full p-6 mx-auto">
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">Issues</h1>
-            <p className="text-muted-foreground mt-1">
-              Track and manage hotel issues that need follow-up
-            </p>
+        <div className="flex items-start justify-between mb-8">
+          <div className="flex items-center gap-3">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary">
+              <AlertCircle className="h-6 w-6 text-primary-foreground" />
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold tracking-tight">Issues</h1>
+              <p className="text-muted-foreground text-sm">
+                Track and manage hotel issues that need follow-up
+              </p>
+            </div>
           </div>
           <CreateIssueButton profile={profile as Profile} />
         </div>

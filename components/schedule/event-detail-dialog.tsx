@@ -94,11 +94,11 @@ export function EventDetailDialog({ event, profile, onClose, onAcknowledge }: Ev
         </div>
 
         <div className="flex gap-2 mt-4">
-          <Button variant="outline" className="flex-1 bg-transparent" onClick={onClose}>
+          <Button variant="outline" className="flex-1 bg-transparent cursor-pointer" onClick={onClose}>
             Close
           </Button>
           {!isAcknowledged && (
-            <Button className="flex-1" onClick={() => onAcknowledge(event.id)}>
+            <Button className="flex-1 cursor-pointer" onClick={() => onAcknowledge(event.id)}>
               <CheckCircle2 className="h-4 w-4 mr-2" />
               Acknowledge
             </Button>

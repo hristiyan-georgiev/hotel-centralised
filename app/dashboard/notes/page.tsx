@@ -46,9 +46,14 @@ export default async function NotesPage({ searchParams }: NotesPageProps) {
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-start justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Handover Notes</h1>
-          <p className="text-muted-foreground mt-1">Browse and manage daily handover notes</p>
+        <div className="flex items-center gap-3">
+          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary">
+            <ClipboardList className="h-6 w-6 text-primary-foreground" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight">Handover Notes</h1>
+            <p className="text-muted-foreground text-sm">Browse and manage daily handover notes</p>
+          </div>
         </div>
         {profile.department_id && (
           <CreateNoteButton profile={profile as Profile} categories={(categories || []) as Category[]} />

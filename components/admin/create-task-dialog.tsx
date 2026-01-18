@@ -11,6 +11,11 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Calendar } from "@/components/ui/calendar"
+import { CalendarIcon } from "lucide-react"
+import { format } from "date-fns"
+import { cn } from "@/lib/utils"
 import type { Department, Profile } from "@/lib/types"
 
 interface CreateTaskDialogProps {
@@ -28,10 +33,10 @@ export function CreateTaskDialog({ open, onClose, departments, staffMembers }: C
     description: "",
     assigned_to: "",
     department_id: "",
-    due_date: "",
     due_time: "",
     priority: "normal",
   })
+  const [dueDate, setDueDate] = useState<Date | undefined>(undefined)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -44,6 +49,7 @@ export function CreateTaskDialog({ open, onClose, departments, staffMembers }: C
 
     await supabase.from("schedule_tasks").insert({
       ...formData,
+      due_date: dueDate ? dueDate.toISOString().split("T")[0] : "",
       assigned_to: formData.assigned_to || null,
       department_id: formData.department_id || null,
       description: formData.description || null,
@@ -57,10 +63,10 @@ export function CreateTaskDialog({ open, onClose, departments, staffMembers }: C
       description: "",
       assigned_to: "",
       department_id: "",
-      due_date: "",
       due_time: "",
       priority: "normal",
     })
+    setDueDate(undefined)
     onClose()
     router.refresh()
   }
@@ -88,12 +94,12 @@ export function CreateTaskDialog({ open, onClose, departments, staffMembers }: C
           <div className="space-y-2">
             <Label htmlFor="assigned_to">Assign To</Label>
             <Select value={formData.assigned_to} onValueChange={(v) => setFormData({ ...formData, assigned_to: v })}>
-              <SelectTrigger>
+              <SelectTrigger className="cursor-pointer w-full">
                 <SelectValue placeholder="Select staff member" />
               </SelectTrigger>
               <SelectContent>
                 {staffMembers.map((staff) => (
-                  <SelectItem key={staff.id} value={staff.id}>
+                  <SelectItem className="cursor-pointer" key={staff.id} value={staff.id}>
                     {staff.full_name}
                   </SelectItem>
                 ))}
@@ -101,39 +107,38 @@ export function CreateTaskDialog({ open, onClose, departments, staffMembers }: C
             </Select>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="department">Department</Label>
-            <Select
-              value={formData.department_id}
-              onValueChange={(v) => setFormData({ ...formData, department_id: v })}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select department" />
-              </SelectTrigger>
-              <SelectContent>
-                {departments.map((dept) => (
-                  <SelectItem key={dept.id} value={dept.id}>
-                    {dept.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="due_date">Due Date</Label>
-              <Input
-                id="due_date"
-                type="date"
-                value={formData.due_date}
-                onChange={(e) => setFormData({ ...formData, due_date: e.target.value })}
-                required
-              />
+              <Label>Due Date</Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "w-full justify-start text-left font-normal cursor-pointer",
+                      !dueDate && "text-muted-foreground"
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {dueDate ? format(dueDate, "PPP") : "Pick a date"}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={dueDate}
+                    onSelect={setDueDate}
+                    initialFocus
+                    className="[&_button]:cursor-pointer"
+                  />
+                </PopoverContent>
+              </Popover>
             </div>
             <div className="space-y-2">
               <Label htmlFor="due_time">Due Time (optional)</Label>
               <Input
+                className="cursor-text"
                 id="due_time"
                 type="time"
                 value={formData.due_time}
@@ -145,14 +150,20 @@ export function CreateTaskDialog({ open, onClose, departments, staffMembers }: C
           <div className="space-y-2">
             <Label htmlFor="priority">Priority</Label>
             <Select value={formData.priority} onValueChange={(v) => setFormData({ ...formData, priority: v })}>
-              <SelectTrigger>
+              <SelectTrigger className="cursor-pointer w-full">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="low">Low</SelectItem>
-                <SelectItem value="normal">Normal</SelectItem>
-                <SelectItem value="urgent">Urgent</SelectItem>
-              </SelectContent>
+                <SelectContent>
+                  <SelectItem className="cursor-pointer" value="low">
+                    <span className="h-2 w-2 rounded-full" style={{ backgroundColor: "#a9a9a9ff" }} />
+                    Low</SelectItem>
+                  <SelectItem className="cursor-pointer" value="normal">
+                    <span className="h-2 w-2 rounded-full" style={{ backgroundColor: "#00a103ff" }} />
+                    Normal</SelectItem>
+                  <SelectItem className="cursor-pointer" value="urgent">
+                    <span className="h-2 w-2 rounded-full" style={{ backgroundColor: "#ff0019ff" }} />
+                    Urgent</SelectItem>
+                </SelectContent>
             </Select>
           </div>
 
@@ -168,10 +179,10 @@ export function CreateTaskDialog({ open, onClose, departments, staffMembers }: C
           </div>
 
           <div className="flex gap-2 pt-4">
-            <Button type="button" variant="outline" className="flex-1 bg-transparent" onClick={onClose}>
+            <Button type="button" variant="outline" className="flex-1 bg-transparent cursor-pointer" onClick={onClose}>
               Cancel
             </Button>
-            <Button type="submit" className="flex-1" disabled={isSubmitting}>
+            <Button type="submit" className="flex-1 cursor-pointer" disabled={isSubmitting}>
               {isSubmitting ? "Creating..." : "Create Task"}
             </Button>
           </div>

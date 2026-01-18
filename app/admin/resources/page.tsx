@@ -4,7 +4,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { AdminResourcesList } from "@/components/admin/admin-resources-list"
 import { CreateResourceDialog } from "@/components/admin/create-resource-dialog"
 import { ManageCategoriesDialog } from "@/components/admin/manage-categories-dialog"
-import { BookOpen, FolderOpen, Clock } from "lucide-react"
+import { BookOpen, FolderOpen, Clock, FileText } from "lucide-react"
 import type { Resource } from "@/lib/types"
 
 export default async function AdminResourcesPage() {
@@ -44,9 +44,14 @@ export default async function AdminResourcesPage() {
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-start justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Manage Resources</h1>
-          <p className="text-muted-foreground mt-1">Create and manage hotel documentation and procedures</p>
+        <div className="flex items-center gap-3">
+          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary">
+            <FileText className="h-6 w-6 text-primary-foreground" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight">Manage Resources</h1>
+            <p className="text-muted-foreground text-sm">Create and manage hotel documentation and procedures</p>
+          </div>
         </div>
         <div className="flex gap-2">
           <ManageCategoriesDialog categories={categories} categoryMap={categoryMap} />

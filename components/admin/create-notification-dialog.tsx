@@ -58,7 +58,7 @@ export function CreateNotificationDialog() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button>
+        <Button className="cursor-pointer">
           <Plus className="h-4 w-4 mr-2" />
           New Notification
         </Button>
@@ -98,19 +98,19 @@ export function CreateNotificationDialog() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="low">
+                  <SelectItem className="cursor-pointer" value="low">
                     <div className="flex items-center gap-2">
                       <Info className="h-4 w-4 text-muted-foreground" />
                       Low Priority
                     </div>
                   </SelectItem>
-                  <SelectItem value="normal">
+                  <SelectItem className="cursor-pointer" value="normal">
                     <div className="flex items-center gap-2">
                       <Bell className="h-4 w-4 text-primary" />
                       Normal
                     </div>
                   </SelectItem>
-                  <SelectItem value="urgent">
+                  <SelectItem className="cursor-pointer" value="urgent">
                     <div className="flex items-center gap-2">
                       <AlertTriangle className="h-4 w-4 text-destructive" />
                       Urgent

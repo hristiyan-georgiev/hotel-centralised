@@ -70,7 +70,7 @@ export function CreateNoteButton({ profile, categories }: CreateNoteButtonProps)
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button>
+        <Button className="cursor-pointer">
           <Plus className="h-4 w-4 mr-2" />
           New Note
         </Button>
@@ -107,13 +107,19 @@ export function CreateNoteButton({ profile, categories }: CreateNoteButtonProps)
             <div className="grid gap-2">
               <Label htmlFor="priority">Priority</Label>
               <Select value={priority} onValueChange={(v) => setPriority(v as typeof priority)}>
-                <SelectTrigger>
+                <SelectTrigger className="cursor-pointer w-full">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="low">Low</SelectItem>
-                  <SelectItem value="normal">Normal</SelectItem>
-                  <SelectItem value="urgent">Urgent</SelectItem>
+                  <SelectItem className="cursor-pointer" value="low">
+                    <span className="h-2 w-2 rounded-full" style={{ backgroundColor: "#a9a9a9ff" }} />
+                    Low</SelectItem>
+                  <SelectItem className="cursor-pointer" value="normal">
+                    <span className="h-2 w-2 rounded-full" style={{ backgroundColor: "#00a103ff" }} />
+                    Normal</SelectItem>
+                  <SelectItem className="cursor-pointer" value="urgent">
+                    <span className="h-2 w-2 rounded-full" style={{ backgroundColor: "#ff0019ff" }} />
+                    Urgent</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -121,12 +127,12 @@ export function CreateNoteButton({ profile, categories }: CreateNoteButtonProps)
             <div className="grid gap-2">
               <Label htmlFor="category">Category</Label>
               <Select value={categoryId} onValueChange={setCategoryId}>
-                <SelectTrigger>
+                <SelectTrigger className="cursor-pointer w-full">
                   <SelectValue placeholder="Select category" />
                 </SelectTrigger>
                 <SelectContent>
                   {categories.map((cat) => (
-                    <SelectItem key={cat.id} value={cat.id}>
+                    <SelectItem className="cursor-pointer" key={cat.id} value={cat.id}>
                       <span className="flex items-center gap-2">
                         <span className="h-2 w-2 rounded-full" style={{ backgroundColor: cat.color }} />
                         {cat.name}
@@ -139,10 +145,10 @@ export function CreateNoteButton({ profile, categories }: CreateNoteButtonProps)
           </div>
 
           <div className="flex justify-end gap-3 pt-4">
-            <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+            <Button className="cursor-pointer" type="button" variant="outline" onClick={() => setOpen(false)}>
               Cancel
             </Button>
-            <Button type="submit" disabled={isLoading}>
+            <Button className="cursor-pointer" type="submit" disabled={isLoading}>
               {isLoading ? "Creating..." : "Create Note"}
             </Button>
           </div>

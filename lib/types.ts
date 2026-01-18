@@ -14,6 +14,7 @@ export interface Profile {
   created_at: string
   updated_at: string
   department?: Department
+  is_active: boolean
 }
 
 export interface Category {

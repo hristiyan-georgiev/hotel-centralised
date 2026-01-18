@@ -42,7 +42,7 @@ export function CreateUserButton({ departments }: CreateUserButtonProps) {
   const [tempPassword, setTempPassword] = useState(generateTempPassword())
   const [fullName, setFullName] = useState("")
   const [role, setRole] = useState<"staff" | "admin">("staff")
-  const [departmentId, setDepartmentId] = useState<string>("")
+  const [departmentId, setDepartmentId] = useState<string>(departments[0]?.id || "")
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
   const [copied, setCopied] = useState(false)
@@ -198,12 +198,12 @@ export function CreateUserButton({ departments }: CreateUserButtonProps) {
             <div className="grid gap-2">
               <Label htmlFor="role">Role</Label>
               <Select value={role} onValueChange={(v) => setRole(v as typeof role)} disabled={success}>
-                <SelectTrigger className="cursor-pointer">
+                <SelectTrigger className="w-full cursor-pointer">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="staff">Staff</SelectItem>
-                  <SelectItem value="admin">Admin</SelectItem>
+                  <SelectItem className="cursor-pointer" value="staff">Staff</SelectItem>
+                  <SelectItem className="cursor-pointer" value="admin">Admin</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -211,12 +211,12 @@ export function CreateUserButton({ departments }: CreateUserButtonProps) {
             <div className="grid gap-2">
               <Label htmlFor="department">Department</Label>
               <Select value={departmentId} onValueChange={setDepartmentId} disabled={success}>
-                <SelectTrigger className="cursor-pointer">
+                <SelectTrigger className="w-full cursor-pointer">
                   <SelectValue placeholder="Select..." />
                 </SelectTrigger>
                 <SelectContent>
                   {departments.map((dept) => (
-                    <SelectItem key={dept.id} value={dept.id}>
+                    <SelectItem key={dept.id} value={dept.id} className="cursor-pointer">
                       {dept.name}
                     </SelectItem>
                   ))}

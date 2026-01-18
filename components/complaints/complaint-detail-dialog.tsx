@@ -108,7 +108,7 @@ export function ComplaintDetailDialog({
   const handleDeleteComment = async (commentId: string) => {
     const supabase = createClient()
     const { error } = await supabase.from("complaint_comments").delete().eq("id", commentId)
-    
+
     if (error) {
       toast.error("Failed to delete comment", {
         description: error.message
@@ -129,7 +129,7 @@ export function ComplaintDetailDialog({
         resolved_at: new Date().toISOString(),
       })
       .eq("id", complaint.id)
-    
+
     if (error) {
       toast.error("Failed to resolve complaint", {
         description: error.message
@@ -150,7 +150,7 @@ export function ComplaintDetailDialog({
         resolved_at: null,
       })
       .eq("id", complaint.id)
-    
+
     if (error) {
       toast.error("Failed to reopen complaint", {
         description: error.message
@@ -174,7 +174,7 @@ export function ComplaintDetailDialog({
         updated_at: new Date().toISOString(),
       })
       .eq("id", complaint.id)
-    
+
     if (error) {
       setLoading(false)
       toast.error("Failed to update complaint", {
@@ -202,7 +202,7 @@ export function ComplaintDetailDialog({
       }))
       await supabase.from("complaint_tag_mappings").insert(tagMappings)
     }
-    
+
     setLoading(false)
     toast.success("Complaint updated successfully")
     setIsEditing(false)
@@ -212,7 +212,7 @@ export function ComplaintDetailDialog({
   const handleDelete = async () => {
     const supabase = createClient()
     const { error } = await supabase.from("complaints").delete().eq("id", complaint.id)
-    
+
     if (error) {
       toast.error("Failed to delete complaint", {
         description: error.message
@@ -253,13 +253,19 @@ export function ComplaintDetailDialog({
                     value={editData.priority}
                     onValueChange={(value) => setEditData({ ...editData, priority: value as any })}
                   >
-                    <SelectTrigger className="w-24 h-7">
+                    <SelectTrigger className="w-32 h-7 cursor-pointer">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="low">Low</SelectItem>
-                      <SelectItem value="normal">Normal</SelectItem>
-                      <SelectItem value="urgent">Urgent</SelectItem>
+                      <SelectItem className="cursor-pointer" value="low">
+                        <span className="h-2 w-2 rounded-full" style={{ backgroundColor: "#a9a9a9ff" }} />
+                        Low</SelectItem>
+                      <SelectItem className="cursor-pointer" value="normal">
+                        <span className="h-2 w-2 rounded-full" style={{ backgroundColor: "#00a103ff" }} />
+                        Normal</SelectItem>
+                      <SelectItem className="cursor-pointer" value="urgent">
+                        <span className="h-2 w-2 rounded-full" style={{ backgroundColor: "#ff0019ff" }} />
+                        Urgent</SelectItem>
                     </SelectContent>
                   </Select>
                 ) : (
@@ -326,12 +332,12 @@ export function ComplaintDetailDialog({
                   value={editData.assigned_to}
                   onValueChange={(value) => setEditData({ ...editData, assigned_to: value })}
                 >
-                  <SelectTrigger className="text-sm">
+                  <SelectTrigger className="text-sm w-full cursor-pointer">
                     <SelectValue placeholder="Assign to staff member" />
                   </SelectTrigger>
                   <SelectContent>
                     {staffMembers.map((staff) => (
-                      <SelectItem key={staff.id} value={staff.id}>
+                      <SelectItem className="cursor-pointer" key={staff.id} value={staff.id}>
                         {staff.full_name || staff.email}
                       </SelectItem>
                     ))}
@@ -365,11 +371,10 @@ export function ComplaintDetailDialog({
                               : [...selectedTags, tag.id]
                           )
                         }}
-                        className={`px-2.5 py-1 rounded text-xs font-medium transition-all cursor-pointer ${
-                          isSelected
+                        className={`px-2.5 py-1 rounded text-xs font-medium transition-all cursor-pointer ${isSelected
                             ? "opacity-100"
                             : "opacity-50 hover:opacity-100"
-                        }`}
+                          }`}
                         style={{
                           backgroundColor: isSelected ? tag.color + "15" : tag.color + "08",
                           borderColor: tag.color + (isSelected ? "50" : "30"),

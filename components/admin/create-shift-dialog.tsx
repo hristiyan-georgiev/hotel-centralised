@@ -76,32 +76,13 @@ export function CreateShiftDialog({ open, onClose, departments, staffMembers }: 
           <div className="space-y-2">
             <Label htmlFor="staff">Staff Member</Label>
             <Select value={formData.staff_id} onValueChange={(v) => setFormData({ ...formData, staff_id: v })}>
-              <SelectTrigger>
+              <SelectTrigger className="cursor-pointer w-full">
                 <SelectValue placeholder="Select staff member" />
               </SelectTrigger>
               <SelectContent>
                 {staffMembers.map((staff) => (
-                  <SelectItem key={staff.id} value={staff.id}>
+                  <SelectItem className="cursor-pointer" key={staff.id} value={staff.id}>
                     {staff.full_name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="department">Department</Label>
-            <Select
-              value={formData.department_id}
-              onValueChange={(v) => setFormData({ ...formData, department_id: v })}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select department" />
-              </SelectTrigger>
-              <SelectContent>
-                {departments.map((dept) => (
-                  <SelectItem key={dept.id} value={dept.id}>
-                    {dept.name}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -123,6 +104,7 @@ export function CreateShiftDialog({ open, onClose, departments, staffMembers }: 
             <div className="space-y-2">
               <Label htmlFor="start_time">Start Time</Label>
               <Input
+                className="cursor-text"
                 id="start_time"
                 type="time"
                 value={formData.start_time}
@@ -133,6 +115,7 @@ export function CreateShiftDialog({ open, onClose, departments, staffMembers }: 
             <div className="space-y-2">
               <Label htmlFor="end_time">End Time</Label>
               <Input
+                className="cursor-text"
                 id="end_time"
                 type="time"
                 value={formData.end_time}
@@ -145,13 +128,13 @@ export function CreateShiftDialog({ open, onClose, departments, staffMembers }: 
           <div className="space-y-2">
             <Label htmlFor="shift_type">Shift Type</Label>
             <Select value={formData.shift_type} onValueChange={(v) => setFormData({ ...formData, shift_type: v })}>
-              <SelectTrigger>
+              <SelectTrigger className="cursor-pointer w-full">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="regular">Regular</SelectItem>
-                <SelectItem value="overtime">Overtime</SelectItem>
-                <SelectItem value="on-call">On-call</SelectItem>
+                <SelectItem className="cursor-pointer" value="regular">Regular</SelectItem>
+                <SelectItem className="cursor-pointer" value="overtime">Overtime</SelectItem>
+                <SelectItem className="cursor-pointer" value="on-call">On-call</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -168,10 +151,10 @@ export function CreateShiftDialog({ open, onClose, departments, staffMembers }: 
           </div>
 
           <div className="flex gap-2 pt-4">
-            <Button type="button" variant="outline" className="flex-1 bg-transparent" onClick={onClose}>
+            <Button type="button" variant="outline" className="flex-1 bg-transparent cursor-pointer" onClick={onClose}>
               Cancel
             </Button>
-            <Button type="submit" className="flex-1" disabled={isSubmitting}>
+            <Button type="submit" className="flex-1 cursor-pointer" disabled={isSubmitting}>
               {isSubmitting ? "Creating..." : "Create Shift"}
             </Button>
           </div>

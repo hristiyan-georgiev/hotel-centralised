@@ -35,9 +35,14 @@ export default async function ResourcesPage() {
 
   return (
     <div className="p-6 space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Resources</h1>
-        <p className="text-muted-foreground mt-1">Hotel procedures, policies, and reference materials</p>
+      <div className="flex items-center gap-3">
+        <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary">
+          <BookOpen className="h-6 w-6 text-primary-foreground" />
+        </div>
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">Resources</h1>
+          <p className="text-muted-foreground text-sm">Hotel procedures, policies, and reference materials</p>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

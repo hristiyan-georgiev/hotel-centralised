@@ -82,15 +82,15 @@ export function AdminScheduleManager({ shifts, events, tasks, departments, staff
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4">
           <TabsList>
-            <TabsTrigger value="shifts" className="gap-2">
+            <TabsTrigger value="shifts" className="gap-2 cursor-pointer">
               <CalendarDays className="h-4 w-4" />
               <span className="hidden sm:inline">Shifts</span>
             </TabsTrigger>
-            <TabsTrigger value="events" className="gap-2">
+            <TabsTrigger value="events" className="gap-2 cursor-pointer">
               <Users className="h-4 w-4" />
               <span className="hidden sm:inline">Events</span>
             </TabsTrigger>
-            <TabsTrigger value="tasks" className="gap-2">
+            <TabsTrigger value="tasks" className="gap-2 cursor-pointer">
               <Briefcase className="h-4 w-4" />
               <span className="hidden sm:inline">Tasks</span>
             </TabsTrigger>
@@ -102,25 +102,25 @@ export function AdminScheduleManager({ shifts, events, tasks, departments, staff
                 <Button
                   variant="outline"
                   onClick={() => setShowAutoSchedule(true)}
-                  className="flex-1 sm:flex-none bg-transparent"
+                  className="flex-1 sm:flex-none bg-transparent cursor-pointer"
                 >
                   <Wand2 className="h-4 w-4 mr-2" />
                   Auto-Generate Rota (In-Progress)
                 </Button>
-                <Button onClick={() => setShowCreateShift(true)} className="flex-1 sm:flex-none">
+                <Button onClick={() => setShowCreateShift(true)} className="flex-1 sm:flex-none cursor-pointer">
                   <Plus className="h-4 w-4 mr-2" />
                   Add Shift
                 </Button>
               </>
             )}
             {activeTab === "events" && (
-              <Button onClick={() => setShowCreateEvent(true)} className="flex-1 sm:flex-none">
+              <Button onClick={() => setShowCreateEvent(true)} className="flex-1 sm:flex-none cursor-pointer">
                 <Plus className="h-4 w-4 mr-2" />
                 Add Event
               </Button>
             )}
             {activeTab === "tasks" && (
-              <Button onClick={() => setShowCreateTask(true)} className="flex-1 sm:flex-none">
+              <Button onClick={() => setShowCreateTask(true)} className="flex-1 sm:flex-none cursor-pointer">
                 <Plus className="h-4 w-4 mr-2" />
                 Add Task
               </Button>

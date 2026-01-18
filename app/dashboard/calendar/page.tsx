@@ -41,9 +41,14 @@ export default async function CalendarPage({ searchParams }: CalendarPageProps) 
 
   return (
     <div className="p-6 space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Calendar View</h1>
-        <p className="text-muted-foreground mt-1">Overview of handover notes by date</p>
+      <div className="flex items-center gap-3">
+        <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary">
+          <CalendarDays className="h-6 w-6 text-primary-foreground" />
+        </div>
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">Calendar View</h1>
+          <p className="text-muted-foreground text-sm">Overview of handover notes by date</p>
+        </div>
       </div>
 
 

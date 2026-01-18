@@ -163,13 +163,19 @@ export function CreateComplaintDialog({
                 value={formData.priority}
                 onValueChange={(value) => setFormData({ ...formData, priority: value })}
               >
-                <SelectTrigger className="cursor-pointer">
+                <SelectTrigger className="cursor-pointer w-full">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="low">Low</SelectItem>
-                  <SelectItem value="normal">Normal</SelectItem>
-                  <SelectItem value="urgent">Urgent</SelectItem>
+                  <SelectItem className="cursor-pointer" value="low">
+                    <span className="h-2 w-2 rounded-full" style={{ backgroundColor: "#a9a9a9ff" }} />
+                    Low</SelectItem>
+                  <SelectItem className="cursor-pointer" value="normal">
+                    <span className="h-2 w-2 rounded-full" style={{ backgroundColor: "#00a103ff" }} />
+                    Normal</SelectItem>
+                  <SelectItem className="cursor-pointer" value="urgent">
+                    <span className="h-2 w-2 rounded-full" style={{ backgroundColor: "#ff0019ff" }} />
+                    Urgent</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -179,12 +185,12 @@ export function CreateComplaintDialog({
                 value={formData.department_id}
                 onValueChange={(value) => setFormData({ ...formData, department_id: value })}
               >
-                <SelectTrigger className="cursor-pointer">
+                <SelectTrigger className="cursor-pointer w-full">
                   <SelectValue placeholder="Select department" />
                 </SelectTrigger>
                 <SelectContent>
                   {departments.map((dept) => (
-                    <SelectItem key={dept.id} value={dept.id}>
+                    <SelectItem className="cursor-pointer" key={dept.id} value={dept.id}>
                       {dept.name}
                     </SelectItem>
                   ))}
@@ -199,12 +205,12 @@ export function CreateComplaintDialog({
               value={formData.assigned_to}
               onValueChange={(value) => setFormData({ ...formData, assigned_to: value })}
             >
-              <SelectTrigger className="cursor-pointer">
+              <SelectTrigger className="cursor-pointer w-full">
                 <SelectValue placeholder="Assign to staff member" />
               </SelectTrigger>
               <SelectContent>
                 {staffMembers.map((staff) => (
-                  <SelectItem key={staff.id} value={staff.id}>
+                  <SelectItem className="cursor-pointer" key={staff.id} value={staff.id}>
                     {staff.full_name || staff.email}
                   </SelectItem>
                 ))}

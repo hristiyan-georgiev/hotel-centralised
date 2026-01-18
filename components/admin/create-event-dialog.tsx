@@ -11,6 +11,11 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Calendar } from "@/components/ui/calendar"
+import { CalendarIcon } from "lucide-react"
+import { format } from "date-fns"
+import { cn } from "@/lib/utils"
 import type { Department } from "@/lib/types"
 
 interface CreateEventDialogProps {
@@ -26,12 +31,12 @@ export function CreateEventDialog({ open, onClose, departments }: CreateEventDia
     title: "",
     description: "",
     department_id: "hotel-wide", // Updated default value
-    event_date: "",
     start_time: "",
     end_time: "",
     event_type: "meeting",
     location: "",
   })
+  const [eventDate, setEventDate] = useState<Date | undefined>(undefined)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -44,6 +49,7 @@ export function CreateEventDialog({ open, onClose, departments }: CreateEventDia
 
     await supabase.from("schedule_events").insert({
       ...formData,
+      event_date: eventDate ? eventDate.toISOString().split("T")[0] : "",
       department_id: formData.department_id || null,
       description: formData.description || null,
       start_time: formData.start_time || null,
@@ -57,12 +63,12 @@ export function CreateEventDialog({ open, onClose, departments }: CreateEventDia
       title: "",
       description: "",
       department_id: "hotel-wide", // Updated default value
-      event_date: "",
       start_time: "",
       end_time: "",
       event_type: "meeting",
       location: "",
     })
+    setEventDate(undefined)
     onClose()
     router.refresh()
   }
@@ -93,13 +99,13 @@ export function CreateEventDialog({ open, onClose, departments }: CreateEventDia
               value={formData.department_id}
               onValueChange={(v) => setFormData({ ...formData, department_id: v })}
             >
-              <SelectTrigger>
+              <SelectTrigger className="cursor-pointer w-full">
                 <SelectValue placeholder="Hotel-wide event" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="hotel-wide">Hotel-wide</SelectItem> {/* Updated value prop */}
+                <SelectItem className="cursor-pointer" value="hotel-wide">Hotel-wide</SelectItem> {/* Updated value prop */}
                 {departments.map((dept) => (
-                  <SelectItem key={dept.id} value={dept.id}>
+                  <SelectItem className="cursor-pointer" key={dept.id} value={dept.id}>
                     {dept.name}
                   </SelectItem>
                 ))}
@@ -108,20 +114,37 @@ export function CreateEventDialog({ open, onClose, departments }: CreateEventDia
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="date">Date</Label>
-            <Input
-              id="date"
-              type="date"
-              value={formData.event_date}
-              onChange={(e) => setFormData({ ...formData, event_date: e.target.value })}
-              required
-            />
+            <Label>Date</Label>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className={cn(
+                    "w-full justify-start text-left font-normal cursor-pointer",
+                    !eventDate && "text-muted-foreground"
+                  )}
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {eventDate ? format(eventDate, "PPP") : "Pick a date"}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="single"
+                  selected={eventDate}
+                  onSelect={setEventDate}
+                  initialFocus
+                  className="[&_button]:cursor-pointer"
+                />
+              </PopoverContent>
+            </Popover>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="start_time">Start Time (optional)</Label>
               <Input
+                className="cursor-text"
                 id="start_time"
                 type="time"
                 value={formData.start_time}
@@ -131,6 +154,7 @@ export function CreateEventDialog({ open, onClose, departments }: CreateEventDia
             <div className="space-y-2">
               <Label htmlFor="end_time">End Time (optional)</Label>
               <Input
+                className="cursor-text"
                 id="end_time"
                 type="time"
                 value={formData.end_time}
@@ -142,15 +166,15 @@ export function CreateEventDialog({ open, onClose, departments }: CreateEventDia
           <div className="space-y-2">
             <Label htmlFor="event_type">Event Type</Label>
             <Select value={formData.event_type} onValueChange={(v) => setFormData({ ...formData, event_type: v })}>
-              <SelectTrigger>
+              <SelectTrigger className="cursor-pointer w-full">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="meeting">Meeting</SelectItem>
-                <SelectItem value="training">Training</SelectItem>
-                <SelectItem value="inspection">Inspection</SelectItem>
-                <SelectItem value="vip">VIP</SelectItem>
-                <SelectItem value="other">Other</SelectItem>
+                <SelectItem className="cursor-pointer" value="meeting">Meeting</SelectItem>
+                <SelectItem className="cursor-pointer" value="training">Training</SelectItem>
+                <SelectItem className="cursor-pointer" value="inspection">Inspection</SelectItem>
+                <SelectItem className="cursor-pointer" value="vip">VIP</SelectItem>
+                <SelectItem className="cursor-pointer" value="other">Other</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -177,10 +201,10 @@ export function CreateEventDialog({ open, onClose, departments }: CreateEventDia
           </div>
 
           <div className="flex gap-2 pt-4">
-            <Button type="button" variant="outline" className="flex-1 bg-transparent" onClick={onClose}>
+            <Button type="button" variant="outline" className="flex-1 bg-transparent cursor-pointer" onClick={onClose}>
               Cancel
             </Button>
-            <Button type="submit" className="flex-1" disabled={isSubmitting}>
+            <Button type="submit" className="flex-1 cursor-pointer" disabled={isSubmitting}>
               {isSubmitting ? "Creating..." : "Create Event"}
             </Button>
           </div>

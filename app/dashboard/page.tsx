@@ -14,7 +14,8 @@ import {
   TrendingUp,
   Calendar,
   Users,
-  Sparkles
+  Sparkles,
+  LayoutDashboard
 } from "lucide-react"
 import { UrgentNotesCard } from "@/components/dashboard/urgent-notes-card"
 import { RecentNotificationsCard } from "@/components/dashboard/recent-notifications-card"
@@ -89,22 +90,27 @@ export default async function DashboardPage() {
   return (
     <div className="p-6 space-y-6 mx-auto">
       <div className="flex items-start justify-between">
-        <div>
-          <div className="flex items-center gap-3 mb-2">
-            <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
-            <Badge variant="outline" className="hidden sm:flex items-center gap-1.5">
-              <Sparkles className="h-3.5 w-3.5" />
-              {profile.role}
-            </Badge>
+        <div className="flex items-center gap-3">
+          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary">
+            <LayoutDashboard className="h-6 w-6 text-primary-foreground" />
           </div>
-          <p className="text-muted-foreground">
-            {new Date().toLocaleDateString("en-US", {
-              weekday: "long",
-              year: "numeric",
-              month: "long",
-              day: "numeric",
-            })}
-          </p>
+          <div>
+            <div className="flex items-center gap-3 mb-1">
+              <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
+              <Badge variant="outline" className="hidden sm:flex items-center gap-1.5">
+                <Sparkles className="h-3.5 w-3.5" />
+                {profile.role}
+              </Badge>
+            </div>
+            <p className="text-muted-foreground text-sm">
+              {new Date().toLocaleDateString("en-US", {
+                weekday: "long",
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+              })}
+            </p>
+          </div>
         </div>
       </div>
 

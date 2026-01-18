@@ -93,7 +93,7 @@ export function DepartmentsList({ departments }: DepartmentsListProps) {
             <Building2 className="h-8 w-8 text-primary" />
           </div>
           <h3 className="text-lg font-semibold mb-2">No departments yet</h3>
-          <p className="text-muted-foreground">Create your first department to organize your team</p>
+          <p className="text-muted-foreground">Create your first department to organise your team</p>
         </CardContent>
       </Card>
     )

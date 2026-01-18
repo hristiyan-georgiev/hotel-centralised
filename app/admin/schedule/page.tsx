@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
 import { AdminScheduleManager } from "@/components/admin/admin-schedule-manager"
 import type { Profile, Department, Shift, ScheduleEvent, ScheduleTask } from "@/lib/types"
+import { CalendarClock } from "lucide-react"
 
 export default async function AdminSchedulePage() {
   const supabase = await createClient()
@@ -66,10 +67,15 @@ export default async function AdminSchedulePage() {
     .order("full_name")
 
   return (
-    <div className="p-8">
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold">Manage Schedule</h1>
-        <p className="text-muted-foreground">Create and manage shifts, events, and tasks for staff</p>
+    <div className="p-6">
+      <div className="mb-8 flex items-center gap-3">
+        <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary">
+          <CalendarClock className="h-6 w-6 text-primary-foreground" />
+        </div>
+        <div>
+          <h1 className="text-2xl font-bold">Manage Schedule</h1>
+          <p className="text-muted-foreground text-sm">Create and manage shifts, events, and tasks for staff</p>
+        </div>
       </div>
 
       <AdminScheduleManager

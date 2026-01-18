@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { AdminNotificationsList } from "@/components/admin/admin-notifications-list"
 import { CreateNotificationDialog } from "@/components/admin/create-notification-dialog"
 import type { Notification } from "@/lib/types"
+import { Bell } from "lucide-react"
 
 export default async function AdminNotificationsPage() {
   const supabase = await createClient()
@@ -54,10 +55,15 @@ export default async function AdminNotificationsPage() {
 
   return (
     <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">Manage Notifications</h1>
-          <p className="text-muted-foreground">Broadcast announcements and updates to staff</p>
+      <div className="flex items-start justify-between">
+        <div className="flex items-center gap-3">
+          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary">
+            <Bell className="h-6 w-6 text-primary-foreground" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold text-foreground">Manage Notifications</h1>
+            <p className="text-muted-foreground text-sm">Broadcast announcements and updates to staff</p>
+          </div>
         </div>
         <CreateNotificationDialog />
       </div>

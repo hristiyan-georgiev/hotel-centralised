@@ -93,11 +93,11 @@ export function ShiftDetailDialog({ shift, profile, onClose, onAcknowledge }: Sh
         </div>
 
         <div className="flex gap-2 mt-4">
-          <Button variant="outline" className="flex-1 bg-transparent" onClick={onClose}>
+          <Button variant="outline" className="flex-1 bg-transparent cursor-pointer" onClick={onClose}>
             Close
           </Button>
           {canAcknowledge && (
-            <Button className="flex-1" onClick={() => onAcknowledge(shift.id)}>
+            <Button className="flex-1 cursor-pointer" onClick={() => onAcknowledge(shift.id)}>
               <CheckCircle2 className="h-4 w-4 mr-2" />
               Confirm Shift
             </Button>

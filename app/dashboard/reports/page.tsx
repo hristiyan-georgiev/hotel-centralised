@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
 import { ComplaintsReportView } from "@/components/reports/complaints-report-view"
 import type { Complaint, Profile, Department, ComplaintTag } from "@/lib/types"
+import { BarChart3 } from "lucide-react"
 
 export default async function ReportsPage() {
   const supabase = await createClient()
@@ -56,10 +57,15 @@ export default async function ReportsPage() {
   const { data: availableTags } = await supabase.from("complaint_tags").select("*").order("name")
 
   return (
-    <div className="space-y-6 p-4">
-      <div>
-        <h1 className="text-2xl font-bold">Reports</h1>
-        <p className="text-muted-foreground">Generate and analyze complaints reports with visual insights</p>
+    <div className="space-y-6 p-6">
+      <div className="flex items-center gap-3">
+        <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary">
+          <BarChart3 className="h-6 w-6 text-primary-foreground" />
+        </div>
+        <div>
+          <h1 className="text-2xl font-bold">Reports</h1>
+          <p className="text-muted-foreground text-sm">Generate and analyse complaints reports with visual insights</p>
+        </div>
       </div>
 
       <ComplaintsReportView

@@ -3,6 +3,7 @@ import { redirect } from "next/navigation"
 import { ComplaintsList } from "@/components/complaints/complaints-list"
 import { CreateComplaintButton } from "@/components/complaints/create-complaint-button"
 import type { Complaint, Profile, Department, ComplaintTag } from "@/lib/types"
+import { MessageSquareWarning } from "lucide-react"
 
 export default async function ComplaintsPage() {
   const supabase = await createClient()
@@ -73,9 +74,14 @@ export default async function ComplaintsPage() {
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-start justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Complaints</h1>
-          <p className="text-muted-foreground mt-1">Track and manage guest complaints and issues</p>
+        <div className="flex items-center gap-3">
+          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary">
+            <MessageSquareWarning className="h-6 w-6 text-primary-foreground" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight">Complaints</h1>
+            <p className="text-muted-foreground text-sm">Track and manage guest complaints and issues</p>
+          </div>
         </div>
         <CreateComplaintButton
           profile={profile as Profile}

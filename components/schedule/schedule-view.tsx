@@ -197,11 +197,11 @@ export function ScheduleView({ profile, shifts, events, tasks, departments, staf
               <div className="flex flex-wrap gap-2 items-center">
                 <Filter className="h-4 w-4 text-muted-foreground" />
                 <Select value={filterDepartment} onValueChange={setFilterDepartment}>
-                  <SelectTrigger className="w-[160px] h-9">
+                  <SelectTrigger className="w-[160px] h-9 cursor-pointer">
                     <SelectValue placeholder="All Departments" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">All Departments</SelectItem>
+                    <SelectItem className="cursor-pointer" value="all">All Departments</SelectItem>
                     {departments.map((dept) => (
                       <SelectItem key={dept.id} value={dept.id}>
                         {dept.name}
@@ -210,16 +210,16 @@ export function ScheduleView({ profile, shifts, events, tasks, departments, staf
                   </SelectContent>
                 </Select>
                 <Select value={filterStaff} onValueChange={setFilterStaff}>
-                  <SelectTrigger className="w-[160px] h-9">
+                  <SelectTrigger className="w-[160px] h-9 cursor-pointer">
                     <SelectValue placeholder="All Staff" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">All Staff</SelectItem>
-                    <SelectItem value={profile.id}>My Schedule</SelectItem>
+                    <SelectItem className="cursor-pointer" value="all">All Staff</SelectItem>
+                    <SelectItem className="cursor-pointer" value={profile.id}>My Schedule</SelectItem>
                     {staffMembers
                       .filter((s) => s.id !== profile.id)
                       .map((staff) => (
-                        <SelectItem key={staff.id} value={staff.id}>
+                        <SelectItem className="cursor-pointer" key={staff.id} value={staff.id}>
                           {staff.full_name}
                         </SelectItem>
                       ))}
@@ -230,7 +230,7 @@ export function ScheduleView({ profile, shifts, events, tasks, departments, staf
               <div className="flex gap-2 items-center">
                 <Popover>
                   <PopoverTrigger asChild>
-                    <Button variant="outline" size="sm">
+                    <Button className="cursor-pointer" variant="outline" size="sm">
                       <CalendarIcon className="h-4 w-4 mr-2" />
                       Jump to date
                     </Button>
@@ -251,8 +251,8 @@ export function ScheduleView({ profile, shifts, events, tasks, departments, staf
                 </Popover>
                 <Tabs value={view} onValueChange={(v) => setView(v as "week" | "day")}>
                   <TabsList className="h-9">
-                    <TabsTrigger value="week" className="text-xs">Week</TabsTrigger>
-                    <TabsTrigger value="day" className="text-xs">Day</TabsTrigger>
+                    <TabsTrigger value="week" className="text-xs cursor-pointer">Week</TabsTrigger>
+                    <TabsTrigger value="day" className="text-xs cursor-pointer">Day</TabsTrigger>
                   </TabsList>
                 </Tabs>
               </div>
@@ -263,14 +263,14 @@ export function ScheduleView({ profile, shifts, events, tasks, departments, staf
 
       {/* Week Navigation */}
       <div className="flex items-center justify-between">
-        <Button variant="ghost" size="sm" onClick={() => setWeekStart(subWeeks(weekStart, 1))}>
+        <Button className="cursor-pointer" variant="ghost" size="sm" onClick={() => setWeekStart(subWeeks(weekStart, 1))}>
           <ChevronLeft className="h-4 w-4 mr-2" />
           Previous
         </Button>
         <h2 className="text-lg font-semibold">
           {format(weekStart, "MMM d")} - {format(endOfWeek(weekStart, { weekStartsOn: 1 }), "MMM d, yyyy")}
         </h2>
-        <Button variant="ghost" size="sm" onClick={() => setWeekStart(addWeeks(weekStart, 1))}>
+        <Button className="cursor-pointer" variant="ghost" size="sm" onClick={() => setWeekStart(addWeeks(weekStart, 1))}>
           Next
           <ChevronRight className="h-4 w-4 ml-2" />
         </Button>
@@ -312,7 +312,7 @@ export function ScheduleView({ profile, shifts, events, tasks, departments, staf
                       key={shift.id}
                       onClick={() => setSelectedShift(shift)}
                       className={cn(
-                        "w-full text-left p-2 rounded-md text-xs transition-colors",
+                        "w-full text-left p-2 rounded-md text-xs transition-colors cursor-pointer",
                         shift.staff_id === profile.id
                           ? "bg-primary/10 hover:bg-primary/15 border-l-2 border-primary"
                           : "bg-muted/50 hover:bg-muted",
@@ -327,7 +327,7 @@ export function ScheduleView({ profile, shifts, events, tasks, departments, staf
                         {shift.staff?.full_name || "Unassigned"}
                       </div>
                       {shift.staff_id === profile.id && !shift.acknowledged && (
-                        <Badge variant="outline" className="mt-1 text-[10px] h-4 bg-background">
+                        <Badge variant="outline" className="mt-1 text-[10px] h-4 bg-background cursor-pointer">
                           Confirm
                         </Badge>
                       )}
@@ -339,7 +339,7 @@ export function ScheduleView({ profile, shifts, events, tasks, departments, staf
                     <button
                       key={event.id}
                       onClick={() => setSelectedEvent(event)}
-                      className="w-full text-left p-2 rounded-md text-xs bg-blue-50 dark:bg-blue-950/20 hover:bg-blue-100 dark:hover:bg-blue-950/30 border-l-2 border-blue-500 transition-colors"
+                      className="w-full text-left p-2 rounded-md text-xs bg-blue-50 dark:bg-blue-950/20 hover:bg-blue-100 dark:hover:bg-blue-950/30 border-l-2 border-blue-500 transition-colors cursor-pointer"
                     >
                       <div className="flex items-center gap-1.5 font-medium text-blue-700 dark:text-blue-300">
                         <Users className="h-3 w-3 shrink-0" />
@@ -357,7 +357,7 @@ export function ScheduleView({ profile, shifts, events, tasks, departments, staf
                       key={task.id}
                       onClick={() => setSelectedTask(task)}
                       className={cn(
-                        "w-full text-left p-2 rounded-md text-xs transition-colors border-l-2",
+                        "w-full text-left p-2 rounded-md text-xs transition-colors border-l-2 cursor-pointer",
                         task.status === "completed"
                           ? "bg-green-50 dark:bg-green-950/20 border-green-500 opacity-70"
                           : task.priority === "urgent"
@@ -394,6 +394,7 @@ export function ScheduleView({ profile, shifts, events, tasks, departments, staf
             <h2 className="text-lg font-semibold">{format(selectedDate, "EEEE, MMMM d, yyyy")}</h2>
             <div className="flex gap-2">
               <Button
+                className="cursor-pointer"
                 variant="ghost"
                 size="sm"
                 onClick={() => {
@@ -406,6 +407,7 @@ export function ScheduleView({ profile, shifts, events, tasks, departments, staf
                 <ChevronLeft className="h-4 w-4" />
               </Button>
               <Button
+                className="cursor-pointer"
                 variant="ghost"
                 size="sm"
                 onClick={() => {
@@ -437,7 +439,7 @@ export function ScheduleView({ profile, shifts, events, tasks, departments, staf
                       key={shift.id}
                       onClick={() => setSelectedShift(shift)}
                       className={cn(
-                        "w-full text-left p-3 rounded-md border transition-colors",
+                        "w-full text-left p-3 rounded-md border transition-colors cursor-pointer",
                         shift.staff_id === profile.id
                           ? "border-primary bg-primary/5 hover:bg-primary/10"
                           : "hover:bg-muted/50",
@@ -464,7 +466,7 @@ export function ScheduleView({ profile, shifts, events, tasks, departments, staf
                             <CheckCircle2 className="h-4 w-4 text-green-600" />
                           ) : (
                             shift.staff_id === profile.id && (
-                              <Badge variant="destructive" className="text-xs">
+                              <Badge variant="destructive" className="text-xs cursor-pointer">
                                 Confirm
                               </Badge>
                             )
@@ -493,7 +495,7 @@ export function ScheduleView({ profile, shifts, events, tasks, departments, staf
                     <button
                       key={event.id}
                       onClick={() => setSelectedEvent(event)}
-                      className="w-full text-left p-3 rounded-md border border-blue-200 dark:border-blue-900 bg-blue-50 dark:bg-blue-950/20 hover:bg-blue-100 dark:hover:bg-blue-950/30 transition-colors"
+                      className="w-full text-left p-3 rounded-md border border-blue-200 dark:border-blue-900 bg-blue-50 dark:bg-blue-950/20 hover:bg-blue-100 dark:hover:bg-blue-950/30 transition-colors cursor-pointer"
                     >
                       <div className="flex items-center justify-between gap-3">
                         <div className="flex-1 min-w-0">
@@ -539,7 +541,7 @@ export function ScheduleView({ profile, shifts, events, tasks, departments, staf
                       key={task.id}
                       onClick={() => setSelectedTask(task)}
                       className={cn(
-                        "w-full text-left p-3 rounded-md border transition-colors",
+                        "w-full text-left p-3 rounded-md border transition-colors cursor-pointer",
                         task.status === "completed"
                           ? "border-green-200 dark:border-green-900 bg-green-50 dark:bg-green-950/20 opacity-70"
                           : task.priority === "urgent"

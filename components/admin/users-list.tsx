@@ -191,9 +191,9 @@ export function UsersList({ users, departments }: UsersListProps) {
                         <SelectValue placeholder="Select department" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="none">No department</SelectItem>
+                        <SelectItem className="cursor-pointer" value="none">No department</SelectItem>
                         {departments.map((dept) => (
-                          <SelectItem key={dept.id} value={dept.id}>
+                          <SelectItem className="cursor-pointer" key={dept.id} value={dept.id}>
                             {dept.name}
                           </SelectItem>
                         ))}
@@ -210,8 +210,8 @@ export function UsersList({ users, departments }: UsersListProps) {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="staff">Staff</SelectItem>
-                      <SelectItem value="admin">Admin</SelectItem>
+                      <SelectItem className="cursor-pointer" value="staff">Staff</SelectItem>
+                      <SelectItem className="cursor-pointer" value="admin">Admin</SelectItem>
                     </SelectContent>
                   </Select>
 

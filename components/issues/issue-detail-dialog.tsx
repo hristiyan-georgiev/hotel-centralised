@@ -100,7 +100,7 @@ export function IssueDetailDialog({
   const handleDeleteComment = async (commentId: string) => {
     const supabase = createClient()
     const { error } = await supabase.from("issue_comments").delete().eq("id", commentId)
-    
+
     if (error) {
       toast.error("Failed to delete comment", {
         description: error.message
@@ -122,7 +122,7 @@ export function IssueDetailDialog({
         updated_at: new Date().toISOString(),
       })
       .eq("id", issue.id)
-    
+
     if (error) {
       toast.error("Failed to resolve issue", {
         description: error.message
@@ -144,7 +144,7 @@ export function IssueDetailDialog({
         updated_at: new Date().toISOString(),
       })
       .eq("id", issue.id)
-    
+
     if (error) {
       toast.error("Failed to reopen issue", {
         description: error.message
@@ -167,7 +167,7 @@ export function IssueDetailDialog({
         updated_at: new Date().toISOString(),
       })
       .eq("id", issue.id)
-    
+
     setLoading(false)
 
     if (error) {
@@ -185,7 +185,7 @@ export function IssueDetailDialog({
   const handleDelete = async () => {
     const supabase = createClient()
     const { error } = await supabase.from("issues").delete().eq("id", issue.id)
-    
+
     if (error) {
       toast.error("Failed to delete issue", {
         description: error.message
@@ -231,13 +231,19 @@ export function IssueDetailDialog({
                     value={editData.priority}
                     onValueChange={(value) => setEditData({ ...editData, priority: value as "low" | "normal" | "urgent" })}
                   >
-                    <SelectTrigger className="w-28 h-7">
+                    <SelectTrigger className="w-28 h-7 cursor-pointer">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="low">Low</SelectItem>
-                      <SelectItem value="normal">Normal</SelectItem>
-                      <SelectItem value="urgent">Urgent</SelectItem>
+                      <SelectItem className="cursor-pointer" value="low">
+                        <span className="h-2 w-2 rounded-full" style={{ backgroundColor: "#a9a9a9ff" }} />
+                        Low</SelectItem>
+                      <SelectItem className="cursor-pointer" value="normal">
+                        <span className="h-2 w-2 rounded-full" style={{ backgroundColor: "#00a103ff" }} />
+                        Normal</SelectItem>
+                      <SelectItem className="cursor-pointer" value="urgent">
+                        <span className="h-2 w-2 rounded-full" style={{ backgroundColor: "#ff0019ff" }} />
+                        Urgent</SelectItem>
                     </SelectContent>
                   </Select>
                 ) : (

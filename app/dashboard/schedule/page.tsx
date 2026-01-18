@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
 import { ScheduleView } from "@/components/schedule/schedule-view"
 import type { Profile, Department, Shift, ScheduleEvent, ScheduleTask } from "@/lib/types"
+import { CalendarClock } from "lucide-react"
 
 export default async function SchedulePage() {
   const supabase = await createClient()
@@ -85,9 +86,14 @@ export default async function SchedulePage() {
 
   return (
     <div className="p-6 space-y-6">
-      <div className="space-y-1">
-        <h1 className="text-3xl font-bold tracking-tight">Schedule & Planning</h1>
-        <p className="text-muted-foreground">Manage your shifts, events, and tasks in one place</p>
+      <div className="flex items-center gap-3">
+        <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary">
+          <CalendarClock className="h-6 w-6 text-primary-foreground" />
+        </div>
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">Schedule & Planning</h1>
+          <p className="text-muted-foreground text-sm">Manage your shifts, events, and tasks in one place</p>
+        </div>
       </div>
 
       <ScheduleView

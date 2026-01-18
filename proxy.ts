@@ -18,7 +18,7 @@ export async function proxy(request: NextRequest) {
 
   // In production, if the domain is NOT allowed, return a 403 Forbidden
   if (process.env.NODE_ENV === 'production' && !isAllowed) {
-    return new NextResponse('Unauthorized Domain Access', { status: 403 })
+    return new NextResponse('Unauthorised Domain Access', { status: 403 })
   }
   
   return await updateSession(request)

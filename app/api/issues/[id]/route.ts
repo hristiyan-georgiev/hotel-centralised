@@ -12,7 +12,7 @@ export async function PATCH(
   } = await supabase.auth.getUser()
 
   if (!user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    return NextResponse.json({ error: "Unauthorised" }, { status: 401 })
   }
 
   const body = await request.json()
@@ -42,7 +42,7 @@ export async function DELETE(
   } = await supabase.auth.getUser()
 
   if (!user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    return NextResponse.json({ error: "Unauthorised" }, { status: 401 })
   }
 
   const { data: profile } = await supabase

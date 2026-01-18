@@ -162,7 +162,15 @@ export function Sidebar({ profile }: SidebarProps) {
       </nav>
 
       <div className="border-t p-4">
-        <div className="flex items-center gap-3 px-3 py-2">
+        <Link
+          href="/dashboard/profile"
+          className={cn(
+            "flex items-center gap-3 px-3 py-2 rounded-lg transition-colors",
+            pathname === "/dashboard/profile"
+              ? "bg-primary/10 text-primary"
+              : "hover:bg-secondary",
+          )}
+        >
           <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-primary text-sm font-medium">
             {profile.full_name?.charAt(0).toUpperCase() || "U"}
           </div>
@@ -170,7 +178,7 @@ export function Sidebar({ profile }: SidebarProps) {
             <p className="text-sm font-medium truncate">{profile.full_name}</p>
             <p className="text-xs text-muted-foreground capitalize">{profile.role}</p>
           </div>
-        </div>
+        </Link>
         <Button
           variant="ghost"
           className="w-full justify-start gap-3 mt-2 text-muted-foreground cursor-pointer"

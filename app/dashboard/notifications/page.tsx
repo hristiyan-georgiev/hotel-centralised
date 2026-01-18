@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
 import { NotificationsList } from "@/components/notifications/notifications-list"
 import type { Notification } from "@/lib/types"
+import { Bell } from "lucide-react"
 
 export default async function NotificationsPage() {
   const supabase = await createClient()
@@ -33,12 +34,17 @@ export default async function NotificationsPage() {
 
   return (
     <div className="p-6 space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-foreground">Notifications</h1>
-        <p className="text-muted-foreground">
-          Stay updated with announcements from management
-          {unreadCount > 0 && <span className="ml-2 text-destructive font-medium">({unreadCount} unread)</span>}
-        </p>
+      <div className="flex items-center gap-3">
+        <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary">
+          <Bell className="h-6 w-6 text-primary-foreground" />
+        </div>
+        <div>
+          <h1 className="text-2xl font-bold text-foreground">Notifications</h1>
+          <p className="text-muted-foreground text-sm">
+            Stay updated with announcements from management
+            {unreadCount > 0 && <span className="ml-2 text-destructive font-medium">({unreadCount} unread)</span>}
+          </p>
+        </div>
       </div>
 
       <NotificationsList notifications={notificationsWithReadStatus as Notification[]} userId={user.id} />

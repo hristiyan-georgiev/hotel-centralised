@@ -1,6 +1,6 @@
 "use client"
 
-import { Bar, BarChart, CartesianGrid, XAxis, YAxis, LabelList } from "recharts"
+import { Bar, BarChart, CartesianGrid, XAxis, YAxis, LabelList, Cell } from "recharts"
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
 
 interface TagsChartProps {
@@ -44,7 +44,7 @@ export function TagsChart({ data }: TagsChartProps) {
         <Bar dataKey="value" radius={[8, 8, 0, 0]}>
           <LabelList dataKey="value" position="top" />
           {data.map((entry, index) => (
-            <Bar key={`bar-${index}`} dataKey="value" fill={entry.color} />
+            <Cell key={`cell-${index}`} fill={entry.color} />
           ))}
         </Bar>
       </BarChart>

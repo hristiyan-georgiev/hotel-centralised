@@ -96,12 +96,12 @@ export function EditResourceDialog({ resource, categories, open, onOpenChange }:
             {categories.length > 0 && !useNewCategory ? (
               <div className="space-y-2">
                 <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                  <SelectTrigger className="cursor-pointer">
+                  <SelectTrigger className="cursor-pointer w-full">
                     <SelectValue placeholder="Select a category" />
                   </SelectTrigger>
                   <SelectContent>
                     {categories.map((cat) => (
-                      <SelectItem key={cat} value={cat}>
+                      <SelectItem className="cursor-pointer" key={cat} value={cat}>
                         {cat}
                       </SelectItem>
                     ))}

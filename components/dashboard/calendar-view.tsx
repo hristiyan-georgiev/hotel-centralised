@@ -123,14 +123,6 @@ export function CalendarView({ notes, complaints, month, year }: CalendarViewPro
                 <span>{dayComplaints.length} complaint{dayComplaints.length !== 1 ? "s" : ""}</span>
               </div>
             )}
-            {dayNotes.slice(0, 1).map((note, idx) => (
-              <div 
-                key={note.id} 
-                className="text-xs truncate text-muted-foreground group-hover:text-foreground transition-colors"
-              >
-                {note.title}
-              </div>
-            ))}
           </div>
         )}
       </button>,

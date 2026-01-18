@@ -11,7 +11,11 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Checkbox } from "@/components/ui/checkbox"
 import { Badge } from "@/components/ui/badge"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { ChevronLeft, ChevronRight, Users, Check, Wand2, Loader2, AlertCircle, Plus, Trash2, Clock } from "lucide-react"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Calendar } from "@/components/ui/calendar"
+import { ChevronLeft, ChevronRight, Users, Check, Wand2, Loader2, AlertCircle, Plus, Trash2, Clock, CalendarIcon } from "lucide-react"
+import { format } from "date-fns"
+import { cn } from "@/lib/utils"
 import type { Department, Profile } from "@/lib/types"
 import {
   generateScheduleOptions,
@@ -66,8 +70,8 @@ export function AutoScheduleGenerator({ open, onClose, departments, staffMembers
   const [employeeConfigs, setEmployeeConfigs] = useState<EmployeeConfig[]>([])
 
   // Step 5: Timeline
-  const [startDate, setStartDate] = useState("")
-  const [endDate, setEndDate] = useState("")
+  const [startDate, setStartDate] = useState<Date | undefined>(undefined)
+  const [endDate, setEndDate] = useState<Date | undefined>(undefined)
 
   // Step 6: Generated Options
   const [generatedOptions, setGeneratedOptions] = useState<ScheduleOption[]>([])
@@ -88,8 +92,8 @@ export function AutoScheduleGenerator({ open, onClose, departments, staffMembers
       { id: "2", name: "Evening", startTime: "14:00", endTime: "22:00", minStaff: 1 },
     ])
     setEmployeeConfigs([])
-    setStartDate("")
-    setEndDate("")
+    setStartDate(undefined)
+    setEndDate(undefined)
     setGeneratedOptions([])
     setSelectedOption(null)
     onClose()
@@ -110,7 +114,7 @@ export function AutoScheduleGenerator({ open, onClose, departments, staffMembers
       case 4:
         return employeeConfigs.every((e) => e.weeklyHours > 0)
       case 5:
-        return startDate !== "" && endDate !== "" && new Date(endDate) >= new Date(startDate)
+        return startDate !== undefined && endDate !== undefined && endDate >= startDate
       case 6:
         return selectedOption !== null
       default:
@@ -211,12 +215,14 @@ export function AutoScheduleGenerator({ open, onClose, departments, staffMembers
   }
 
   const handleGenerateSchedule = () => {
+    if (!startDate || !endDate) return
+    
     setIsGenerating(true)
 
     setTimeout(() => {
       const options = generateScheduleOptions({
-        startDate,
-        endDate,
+        startDate: startDate.toISOString().split("T")[0],
+        endDate: endDate.toISOString().split("T")[0],
         employeeConfigs,
         shiftDefinitions,
       })
@@ -390,7 +396,7 @@ export function AutoScheduleGenerator({ open, onClose, departments, staffMembers
                       key={template.name}
                       variant="outline"
                       size="sm"
-                      className="h-7 text-xs"
+                      className="h-7 text-xs cursor-pointer"
                       onClick={() => applyShiftTemplate(template)}
                       disabled={shiftDefinitions.some((s) => s.name === template.name)}
                     >
@@ -450,7 +456,7 @@ export function AutoScheduleGenerator({ open, onClose, departments, staffMembers
                                   type="time"
                                   value={shift.startTime}
                                   onChange={(e) => updateShiftDefinition(shift.id, "startTime", e.target.value)}
-                                  className="h-9"
+                                  className="h-9 cursor-text"
                                 />
                               </div>
                               <div className="space-y-1.5">
@@ -462,7 +468,7 @@ export function AutoScheduleGenerator({ open, onClose, departments, staffMembers
                                   type="time"
                                   value={shift.endTime}
                                   onChange={(e) => updateShiftDefinition(shift.id, "endTime", e.target.value)}
-                                  className="h-9"
+                                  className="h-9 cursor-text"
                                 />
                               </div>
                             </div>
@@ -473,7 +479,7 @@ export function AutoScheduleGenerator({ open, onClose, departments, staffMembers
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="h-8 w-8 shrink-0 text-muted-foreground hover:text-destructive hover:bg-transparent"
+                            className="h-8 w-8 shrink-0 text-muted-foreground hover:text-destructive hover:bg-transparent cursor-pointer"
                             onClick={() => removeShiftDefinition(shift.id)}
                             disabled={shiftDefinitions.length <= 1}
                           >
@@ -485,7 +491,7 @@ export function AutoScheduleGenerator({ open, onClose, departments, staffMembers
                   ))}
                 </div>
 
-                <Button variant="outline" onClick={addShiftDefinition} className="w-full" size="sm">
+                <Button variant="outline" onClick={addShiftDefinition} className="w-full cursor-pointer" size="sm">
                   <Plus className="h-4 w-4 mr-2" />
                   Add Another Shift
                 </Button>
@@ -568,25 +574,57 @@ export function AutoScheduleGenerator({ open, onClose, departments, staffMembers
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-1.5">
-                    <Label htmlFor="start-date" className="text-xs font-medium text-muted-foreground">Start Date</Label>
-                    <Input
-                      id="start-date"
-                      type="date"
-                      value={startDate}
-                      onChange={(e) => setStartDate(e.target.value)}
-                      className="h-9"
-                    />
+                    <Label className="text-xs font-medium text-muted-foreground">Start Date</Label>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className={cn(
+                            "w-full justify-start text-left font-normal h-9 cursor-pointer",
+                            !startDate && "text-muted-foreground"
+                          )}
+                        >
+                          <CalendarIcon className="mr-2 h-4 w-4" />
+                          {startDate ? format(startDate, "PPP") : "Pick a date"}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                          mode="single"
+                          selected={startDate}
+                          onSelect={setStartDate}
+                          initialFocus
+                          className="[&_button]:cursor-pointer"
+                        />
+                      </PopoverContent>
+                    </Popover>
                   </div>
                   <div className="space-y-1.5">
-                    <Label htmlFor="end-date" className="text-xs font-medium text-muted-foreground">End Date</Label>
-                    <Input
-                      id="end-date"
-                      type="date"
-                      value={endDate}
-                      min={startDate}
-                      onChange={(e) => setEndDate(e.target.value)}
-                      className="h-9"
-                    />
+                    <Label className="text-xs font-medium text-muted-foreground">End Date</Label>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className={cn(
+                            "w-full justify-start text-left font-normal h-9 cursor-pointer",
+                            !endDate && "text-muted-foreground"
+                          )}
+                        >
+                          <CalendarIcon className="mr-2 h-4 w-4" />
+                          {endDate ? format(endDate, "PPP") : "Pick a date"}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                          mode="single"
+                          selected={endDate}
+                          onSelect={setEndDate}
+                          disabled={(date) => startDate ? date < startDate : false}
+                          initialFocus
+                          className="[&_button]:cursor-pointer"
+                        />
+                      </PopoverContent>
+                    </Popover>
                   </div>
                 </div>
 
@@ -623,7 +661,7 @@ export function AutoScheduleGenerator({ open, onClose, departments, staffMembers
                                   key={date}
                                   variant={isOff ? "destructive" : "outline"}
                                   size="sm"
-                                  className="h-auto py-1 px-2 text-xs"
+                                  className="h-auto py-1 px-2 text-xs cursor-pointer"
                                   onClick={() => toggleDayOff(employee.id, date)}
                                 >
                                   <span className="flex flex-col items-center leading-tight">
@@ -700,13 +738,13 @@ export function AutoScheduleGenerator({ open, onClose, departments, staffMembers
 
         {/* Footer Navigation */}
         <div className="flex items-center justify-between px-6 py-4 border-t bg-muted/20">
-          <Button variant="ghost" size="sm" onClick={currentStep === 1 ? handleClose : handleBack}>
+          <Button className="cursor-pointer" variant="ghost" size="sm" onClick={currentStep === 1 ? handleClose : handleBack}>
             <ChevronLeft className="h-4 w-4 mr-2" />
             {currentStep === 1 ? "Cancel" : "Back"}
           </Button>
 
           {currentStep < 6 ? (
-            <Button size="sm" onClick={handleNext} disabled={!canProceed() || isGenerating}>
+            <Button className="cursor-pointer" size="sm" onClick={handleNext} disabled={!canProceed() || isGenerating}>
               {isGenerating ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
@@ -720,7 +758,7 @@ export function AutoScheduleGenerator({ open, onClose, departments, staffMembers
               )}
             </Button>
           ) : (
-            <Button size="sm" onClick={handleSaveSchedule} disabled={selectedOption === null || isSaving}>
+            <Button className="cursor-pointer" size="sm" onClick={() => {}} disabled>
               {isSaving ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
@@ -729,7 +767,7 @@ export function AutoScheduleGenerator({ open, onClose, departments, staffMembers
               ) : (
                 <>
                   <Check className="h-4 w-4 mr-2" />
-                  Apply Schedule
+                  Apply Schedule (Disabled: In-Progress)
                 </>
               )}
             </Button>

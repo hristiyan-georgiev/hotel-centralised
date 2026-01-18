@@ -118,7 +118,7 @@ export function TaskDetailDialog({ task, profile, onClose, onAcknowledge, onUpda
 
         <div className="flex flex-col gap-2 mt-4">
           {canAcknowledge && (
-            <Button onClick={() => onAcknowledge(task.id)}>
+            <Button className="cursor-pointer" onClick={() => onAcknowledge(task.id)}>
               <CheckCircle2 className="h-4 w-4 mr-2" />
               Acknowledge Task
             </Button>
@@ -128,7 +128,7 @@ export function TaskDetailDialog({ task, profile, onClose, onAcknowledge, onUpda
               {task.status === "pending" && (
                 <Button
                   variant="outline"
-                  className="flex-1 bg-transparent"
+                  className="flex-1 bg-transparent cursor-pointer"
                   onClick={() => onUpdateStatus(task.id, "in_progress")}
                 >
                   <PlayCircle className="h-4 w-4 mr-2" />
@@ -137,7 +137,7 @@ export function TaskDetailDialog({ task, profile, onClose, onAcknowledge, onUpda
               )}
               <Button
                 variant={task.status === "in_progress" ? "default" : "outline"}
-                className="flex-1"
+                className="flex-1 cursor-pointer"
                 onClick={() => onUpdateStatus(task.id, "completed")}
               >
                 <CheckCircle2 className="h-4 w-4 mr-2" />
@@ -145,7 +145,7 @@ export function TaskDetailDialog({ task, profile, onClose, onAcknowledge, onUpda
               </Button>
             </div>
           )}
-          <Button variant="outline" onClick={onClose}>
+          <Button className="cursor-pointer" variant="outline" onClick={onClose}>
             Close
           </Button>
         </div>

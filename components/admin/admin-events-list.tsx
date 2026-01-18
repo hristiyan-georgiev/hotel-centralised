@@ -130,7 +130,7 @@ export function AdminEventsList({ events, departments }: AdminEventsListProps) {
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="text-destructive hover:text-destructive"
+                          className="text-destructive hover:text-destructive cursor-pointer"
                           onClick={() => setDeleteId(event.id)}
                         >
                           <Trash2 className="h-4 w-4" />
@@ -154,8 +154,8 @@ export function AdminEventsList({ events, departments }: AdminEventsListProps) {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete} disabled={isDeleting}>
+            <AlertDialogCancel className="cursor-pointer">Cancel</AlertDialogCancel>
+            <AlertDialogAction className="cursor-pointer" onClick={handleDelete} disabled={isDeleting}>
               {isDeleting ? "Deleting..." : "Delete"}
             </AlertDialogAction>
           </AlertDialogFooter>

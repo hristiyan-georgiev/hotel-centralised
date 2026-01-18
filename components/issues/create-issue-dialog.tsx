@@ -95,14 +95,20 @@ export function CreateIssueDialog({ open, onOpenChange, profile }: CreateIssueDi
               value={formData.priority}
               onValueChange={(value) => setFormData({ ...formData, priority: value as "low" | "normal" | "urgent" })}
             >
-              <SelectTrigger>
+              <SelectTrigger className="w-32 cursor-pointer">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="low">Low</SelectItem>
-                <SelectItem value="normal">Normal</SelectItem>
-                <SelectItem value="urgent">Urgent</SelectItem>
-              </SelectContent>
+                <SelectContent>
+                  <SelectItem className="cursor-pointer" value="low">
+                    <span className="h-2 w-2 rounded-full" style={{ backgroundColor: "#a9a9a9ff" }} />
+                    Low</SelectItem>
+                  <SelectItem className="cursor-pointer" value="normal">
+                    <span className="h-2 w-2 rounded-full" style={{ backgroundColor: "#00a103ff" }} />
+                    Normal</SelectItem>
+                  <SelectItem className="cursor-pointer" value="urgent">
+                    <span className="h-2 w-2 rounded-full" style={{ backgroundColor: "#ff0019ff" }} />
+                    Urgent</SelectItem>
+                </SelectContent>
             </Select>
           </div>
 

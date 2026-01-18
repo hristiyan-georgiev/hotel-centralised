@@ -120,7 +120,7 @@ export function AdminShiftsList({ shifts, departments, staffMembers }: AdminShif
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="text-destructive hover:text-destructive"
+                          className="text-destructive hover:text-destructive cursor-pointer"
                           onClick={() => setDeleteId(shift.id)}
                         >
                           <Trash2 className="h-4 w-4" />
@@ -144,8 +144,8 @@ export function AdminShiftsList({ shifts, departments, staffMembers }: AdminShif
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete} disabled={isDeleting}>
+            <AlertDialogCancel className="cursor-pointer">Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete} disabled={isDeleting} className="cursor-pointer">
               {isDeleting ? "Deleting..." : "Delete"}
             </AlertDialogAction>
           </AlertDialogFooter>

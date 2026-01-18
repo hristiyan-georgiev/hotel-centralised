@@ -113,13 +113,19 @@ export function EditNoteDialog({ note, categories, open, onOpenChange }: EditNot
             <div className="space-y-2">
               <Label htmlFor="edit-priority">Priority</Label>
               <Select value={formData.priority} onValueChange={(value) => setFormData({ ...formData, priority: value as any })}>
-                <SelectTrigger className="cursor-pointer" id="edit-priority">
+                <SelectTrigger className="cursor-pointer w-full" id="edit-priority">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="low">Low</SelectItem>
-                  <SelectItem value="normal">Normal</SelectItem>
-                  <SelectItem value="urgent">Urgent</SelectItem>
+                  <SelectItem className="cursor-pointer" value="low">
+                    <span className="h-2 w-2 rounded-full" style={{ backgroundColor: "#a9a9a9ff" }} />
+                    Low</SelectItem>
+                  <SelectItem className="cursor-pointer" value="normal">
+                    <span className="h-2 w-2 rounded-full" style={{ backgroundColor: "#00a103ff" }} />
+                    Normal</SelectItem>
+                  <SelectItem className="cursor-pointer" value="urgent">
+                    <span className="h-2 w-2 rounded-full" style={{ backgroundColor: "#ff0019ff" }} />
+                    Urgent</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -130,13 +136,16 @@ export function EditNoteDialog({ note, categories, open, onOpenChange }: EditNot
                 value={formData.category_id}
                 onValueChange={(value) => setFormData({ ...formData, category_id: value })}
               >
-                <SelectTrigger className="cursor-pointer" id="edit-category">
+                <SelectTrigger className="cursor-pointer w-full" id="edit-category">
                   <SelectValue placeholder="Select category" />
                 </SelectTrigger>
                 <SelectContent>
-                  {categories.map((category) => (
-                    <SelectItem key={category.id} value={category.id}>
-                      {category.name}
+                  {categories.map((cat) => (
+                    <SelectItem className="cursor-pointer" key={cat.id} value={cat.id}>
+                      <span className="flex items-center gap-2">
+                        <span className="h-2 w-2 rounded-full" style={{ backgroundColor: cat.color }} />
+                        {cat.name}
+                      </span>
                     </SelectItem>
                   ))}
                 </SelectContent>
