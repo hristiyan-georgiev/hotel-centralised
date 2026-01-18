@@ -51,7 +51,7 @@ export default async function IssuesPage() {
 
   return (
     <div className="h-screen overflow-auto">
-      <div className="w-full px-8 py-8 mx-auto">
+      <div className="w-full p-6 mx-auto">
         <div className="flex items-center justify-between mb-8">
           <div>
             <h1 className="text-3xl font-bold tracking-tight">Issues</h1>
