@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
 import { ComplaintsReportView } from "@/components/reports/complaints-report-view"
+import { Card, CardContent } from "@/components/ui/card"
 import type { Complaint, Profile, Department, ComplaintTag } from "@/lib/types"
 import { BarChart3 } from "lucide-react"
 
@@ -58,15 +59,17 @@ export default async function ReportsPage() {
 
   return (
     <div className="space-y-6 p-6">
-      <div className="flex items-center gap-3">
-        <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary">
-          <BarChart3 className="h-6 w-6 text-primary-foreground" />
-        </div>
-        <div>
-          <h1 className="text-2xl font-bold">Reports</h1>
-          <p className="text-muted-foreground text-sm">Generate and analyse complaints reports with visual insights</p>
-        </div>
-      </div>
+      <Card className="border-border/70 bg-gradient-to-r from-slate-500/10 via-transparent to-transparent">
+        <CardContent className="flex items-start gap-4 p-6">
+          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
+            <BarChart3 className="h-6 w-6 text-primary" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-semibold tracking-tight">Reports</h1>
+            <p className="text-sm text-muted-foreground">Generate and analyse complaints reports with visual insights.</p>
+          </div>
+        </CardContent>
+      </Card>
 
       <ComplaintsReportView
         complaints={(complaintsWithTags as Complaint[]) || []}

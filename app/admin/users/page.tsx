@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server"
 import { UsersList } from "@/components/admin/users-list"
 import { CreateUserButton } from "@/components/admin/create-user-button"
+import { Card, CardContent } from "@/components/ui/card"
 import type { Profile, Department } from "@/lib/types"
 import { Users } from "lucide-react"
 
@@ -12,19 +13,25 @@ export default async function UsersPage() {
   const { data: departments } = await supabase.from("departments").select("*").order("name")
 
   return (
-    <div className="p-6">
-      <div className="flex items-start justify-between mb-8">
-        <div className="flex items-center gap-3">
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary">
-            <Users className="h-6 w-6 text-primary-foreground" />
+    <div className="space-y-6 p-6">
+      <Card className="border-border/70 bg-gradient-to-r from-slate-500/10 via-transparent to-transparent">
+        <CardContent className="flex flex-col gap-5 p-6 md:flex-row md:items-start md:justify-between">
+          <div className="flex items-start gap-4">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
+              <Users className="h-6 w-6 text-primary" />
+            </div>
+            <div className="space-y-1">
+              <h1 className="text-2xl font-semibold tracking-tight">Manage Users</h1>
+              <p className="max-w-xl text-sm text-muted-foreground">
+                Oversee account access, staffing roles, and department assignments from one operational workspace.
+              </p>
+            </div>
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-foreground">Manage Users</h1>
-            <p className="text-muted-foreground text-sm">Create accounts and assign departments</p>
+            <CreateUserButton departments={(departments || []) as Department[]} />
           </div>
-        </div>
-        <CreateUserButton departments={(departments || []) as Department[]} />
-      </div>
+        </CardContent>
+      </Card>
 
       <UsersList users={(profiles || []) as Profile[]} departments={(departments || []) as Department[]} />
     </div>

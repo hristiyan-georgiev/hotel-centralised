@@ -1,10 +1,10 @@
 "use client"
 
+import { useMemo } from "react"
 import { useRouter } from "next/navigation"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { ChevronLeft, ChevronRight, Circle, AlertCircle, MessageSquare } from "lucide-react"
+import { AlertTriangle, CalendarDays, MessageSquare, NotebookText } from "lucide-react"
 import type { HandoverNote, Complaint } from "@/lib/types"
 
 interface CalendarViewProps {
@@ -30,140 +30,161 @@ const MONTHS = [
   "December",
 ]
 
+const toDateKey = (year: number, month: number, day: number) =>
+  `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`
+
+const toIsoDate = (value: string) => value.split("T")[0]
+
 export function CalendarView({ notes, complaints, month, year }: CalendarViewProps) {
   const router = useRouter()
 
   const firstDay = new Date(year, month, 1).getDay()
   const daysInMonth = new Date(year, month + 1, 0).getDate()
-  const today = new Date().toISOString().split("T")[0]
+  const todayDate = new Date()
+  const todayKey = toDateKey(todayDate.getFullYear(), todayDate.getMonth(), todayDate.getDate())
 
-  const navigateMonth = (direction: number) => {
-    let newMonth = month + direction
-    let newYear = year
-    if (newMonth < 0) {
-      newMonth = 11
-      newYear--
-    } else if (newMonth > 11) {
-      newMonth = 0
-      newYear++
-    }
-    router.push(`/dashboard/calendar?month=${newMonth}&year=${newYear}`)
-  }
+  const notesByDate = useMemo(() => {
+    const map = new Map<string, Pick<HandoverNote, "id" | "note_date" | "priority" | "title">[]>()
+    notes.forEach((note) => {
+      const existing = map.get(note.note_date)
+      if (existing) {
+        existing.push(note)
+      } else {
+        map.set(note.note_date, [note])
+      }
+    })
+    return map
+  }, [notes])
 
-  const getNotesForDate = (day: number) => {
-    const dateStr = `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`
-    return notes.filter((n) => n.note_date === dateStr)
-  }
+  const complaintsByDate = useMemo(() => {
+    const map = new Map<string, Pick<Complaint, "id" | "created_at" | "priority" | "status">[]>()
+    complaints.forEach((complaint) => {
+      const date = toIsoDate(complaint.created_at)
+      const existing = map.get(date)
+      if (existing) {
+        existing.push(complaint)
+      } else {
+        map.set(date, [complaint])
+      }
+    })
+    return map
+  }, [complaints])
 
-  const getComplaintsForDate = (day: number) => {
-    const dateStr = `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`
-    return complaints.filter((c) => c.created_at.startsWith(dateStr))
-  }
-
-  const goToDate = (day: number) => {
-    const dateStr = `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`
+  const goToDate = (dateStr: string) => {
     router.push(`/dashboard/notes?date=${dateStr}`)
   }
 
-  const days = []
-  for (let i = 0; i < firstDay; i++) {
-    days.push(<div key={`empty-${i}`} className="h-28 border border-transparent" />)
-  }
+  const totalSlots = Math.ceil((firstDay + daysInMonth) / 7) * 7
+  const dayCells = Array.from({ length: totalSlots }, (_, slot) => {
+    const day = slot - firstDay + 1
 
-  for (let day = 1; day <= daysInMonth; day++) {
-    const dateStr = `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`
-    const dayNotes = getNotesForDate(day)
-    const dayComplaints = getComplaintsForDate(day)
-    const isToday = dateStr === today
-    const hasUrgent = dayNotes.some((n) => n.priority === "urgent")
-    const hasUrgentComplaint = dayComplaints.some((c) => c.priority === "urgent")
+    if (day < 1 || day > daysInMonth) {
+      return <div key={`empty-${slot}`} className="min-h-36 bg-white" />
+    }
 
-    days.push(
+    const dateKey = toDateKey(year, month, day)
+    const dayNotes = notesByDate.get(dateKey) ?? []
+    const dayComplaints = complaintsByDate.get(dateKey) ?? []
+    const isToday = dateKey === todayKey
+    const hasUrgent =
+      dayNotes.some((item) => item.priority === "urgent") || dayComplaints.some((item) => item.priority === "urgent")
+    const hasActivity = dayNotes.length > 0 || dayComplaints.length > 0
+    const openComplaintCount = dayComplaints.filter((item) => item.status === "open").length
+
+    return (
       <button
-        key={day}
-        onClick={() => goToDate(day)}
-        className={`h-28 p-3 text-left border rounded-lg transition-all group relative cursor-pointer ${
-          isToday 
-            ? "border-primary bg-primary/10 shadow-sm" 
-            : dayNotes.length > 0 || dayComplaints.length > 0
-            ? "border-border bg-card hover:border-primary/50 hover:shadow-md"
-            : "border-border bg-card hover:bg-secondary/50 hover:border-border"
+        key={dateKey}
+        onClick={() => goToDate(dateKey)}
+        className={`group min-h-36 bg-white p-3 text-left transition-colors cursor-pointer ${
+          isToday ? "ring-1 ring-inset ring-primary/55" : "hover:bg-background/90"
         }`}
+        aria-label={`Open notes for ${MONTHS[month]} ${day}, ${year}`}
       >
-        <div className="flex items-start justify-between">
-          <div className={`text-base font-semibold ${
-            isToday ? "text-primary" : "text-foreground"
-          }`}>
+        <div className="flex items-start justify-between gap-2">
+          <span
+            className={`inline-flex h-8 w-8 items-center justify-center rounded-full text-sm font-semibold ${
+              isToday ? "bg-primary/15 text-primary" : "bg-muted text-foreground"
+            }`}
+          >
             {day}
+          </span>
+          <div className="flex items-center gap-1">
+            {isToday && (
+              <Badge variant="secondary" className="h-5 px-1.5 text-[10px] uppercase tracking-wide">
+                Today
+              </Badge>
+            )}
+            {hasUrgent && <AlertTriangle className="h-3.5 w-3.5 text-red-500" />}
           </div>
-          {isToday && (
-            <Badge variant="default" className="text-xs px-1.5 py-0 h-5">
-              Today
-            </Badge>
+        </div>
+
+        <div className="mt-3 space-y-1.5 text-xs">
+          {hasActivity ? (
+            <>
+              {dayNotes.length > 0 && (
+                <div className="flex items-center gap-1.5 text-muted-foreground">
+                  <NotebookText className="h-3.5 w-3.5 text-primary" />
+                  <span>
+                    {dayNotes.length} note{dayNotes.length !== 1 ? "s" : ""}
+                  </span>
+                </div>
+              )}
+              {dayComplaints.length > 0 && (
+                <div className="flex items-center gap-1.5 text-muted-foreground">
+                  <MessageSquare className="h-3.5 w-3.5 text-foreground/70" />
+                  <span>
+                    {dayComplaints.length} complaint{dayComplaints.length !== 1 ? "s" : ""}
+                    {openComplaintCount > 0 ? ` (${openComplaintCount} open)` : ""}
+                  </span>
+                </div>
+              )}
+            </>
+          ) : (
+            <p className="text-muted-foreground/70">No activity</p>
           )}
         </div>
-        
-        {(dayNotes.length > 0 || dayComplaints.length > 0) && (
-          <div className="mt-2 space-y-1.5">
-            {(hasUrgent || hasUrgentComplaint) && (
-              <div className="flex items-center gap-1.5 text-xs text-red-600 bg-red-500/10 px-2 py-1 rounded">
-                <AlertCircle className="h-3 w-3" />
-                <span className="font-medium">Urgent</span>
-              </div>
-            )}
-            {dayNotes.length > 0 && (
-              <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                <Circle className="h-2 w-2 fill-current" />
-                <span>{dayNotes.length} note{dayNotes.length !== 1 ? "s" : ""}</span>
-              </div>
-            )}
-            {dayComplaints.length > 0 && (
-              <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                <MessageSquare className="h-2.5 w-2.5 fill-current" />
-                <span>{dayComplaints.length} complaint{dayComplaints.length !== 1 ? "s" : ""}</span>
-              </div>
-            )}
-          </div>
-        )}
-      </button>,
+      </button>
     )
-  }
+  })
 
   return (
-    <Card className="overflow-hidden">
-      <CardHeader className="border-b">
-        <div className="flex items-center justify-between">
-          <Button 
-            variant="outline" 
-            size="icon" 
-            onClick={() => navigateMonth(-1)}
-            className="hover:bg-background cursor-pointer"
-          >
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
-          <h2 className="text-2xl font-bold">
-            {MONTHS[month]} {year}
-          </h2>
-          <Button 
-            variant="outline" 
-            size="icon" 
-            onClick={() => navigateMonth(1)}
-            className="hover:bg-background cursor-pointer"
-          >
-            <ChevronRight className="h-4 w-4" />
-          </Button>
-        </div>
-      </CardHeader>
-      <CardContent className="p-4">
-        <div className="grid grid-cols-7 gap-3 mb-3">
-          {DAYS.map((day) => (
-            <div key={day} className="text-center text-sm font-semibold text-muted-foreground py-2">
-              {day}
+    <div className="space-y-4">
+      <Card className="overflow-hidden border-border/70">
+        <CardContent className="p-0">
+          <div className="overflow-x-auto">
+            <div className="min-w-[760px]">
+              <div className="grid grid-cols-7 border-b bg-white">
+                {DAYS.map((day) => (
+                  <div key={day} className="p-3 text-center text-xs font-semibold uppercase tracking-wide text-muted-foreground ">
+                    {day}
+                  </div>
+                ))}
+              </div>
+
+              <div className="grid grid-cols-7 gap-px bg-border/60">{dayCells}</div>
             </div>
-          ))}
-        </div>
-        <div className="grid grid-cols-7 gap-3">{days}</div>
-      </CardContent>
-    </Card>
+          </div>
+        </CardContent>
+      </Card>
+
+      <div className="flex flex-wrap items-center gap-3 px-1 text-xs text-muted-foreground">
+        <span className="inline-flex items-center gap-1.5">
+          <CalendarDays className="h-3.5 w-3.5" />
+          Select a day to open handover notes
+        </span>
+        <span className="inline-flex items-center gap-1.5">
+          <NotebookText className="h-3.5 w-3.5 text-primary" />
+          Note count
+        </span>
+        <span className="inline-flex items-center gap-1.5">
+          <MessageSquare className="h-3.5 w-3.5" />
+          Complaint count
+        </span>
+        <span className="inline-flex items-center gap-1.5">
+          <AlertTriangle className="h-3.5 w-3.5 text-red-500" />
+          Urgent activity
+        </span>
+      </div>
+    </div>
   )
 }

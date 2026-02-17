@@ -17,7 +17,7 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Plus, RefreshCw, Copy, Check } from "lucide-react"
+import { Plus, RefreshCw, Copy, Check, Mail, KeyRound, ShieldCheck, Building2, UserRoundPlus } from "lucide-react"
 import { toast } from "sonner"
 import type { Department } from "@/lib/types"
 
@@ -113,7 +113,7 @@ export function CreateUserButton({ departments }: CreateUserButtonProps) {
     setTempPassword(generateTempPassword())
     setFullName("")
     setRole("staff")
-    setDepartmentId("")
+    setDepartmentId(departments[0]?.id || "")
     setSuccess(false)
     setError(null)
     setCopied(false)
@@ -123,46 +123,67 @@ export function CreateUserButton({ departments }: CreateUserButtonProps) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="cursor-pointer">
+        <Button className="cursor-pointer shadow-sm">
           <Plus className="h-4 w-4 mr-2" />
           New User
         </Button>
       </DialogTrigger>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Create User Account</DialogTitle>
-          <DialogDescription>Create a new staff or admin account</DialogDescription>
-        </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid gap-2">
-            <Label htmlFor="fullName">Full Name</Label>
-            <Input
-              id="fullName"
-              placeholder="John Smith"
-              value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
-              required
-              disabled={success}
-            />
-          </div>
+      <DialogContent className="max-h-[90vh] overflow-y-auto p-0 sm:max-w-3xl">
+        <div className="border-b bg-gradient-to-r from-primary/10 via-primary/5 to-transparent px-6 py-5">
+          <DialogHeader className="space-y-2 text-left">
+            <div className="inline-flex w-fit items-center gap-2 rounded-full border bg-background/85 px-3 py-1 text-xs font-medium text-muted-foreground">
+              <UserRoundPlus className="h-3.5 w-3.5" />
+              Staff Onboarding
+            </div>
+            <DialogTitle className="text-xl tracking-tight">Create User Account</DialogTitle>
+            <DialogDescription className="max-w-2xl text-sm">
+              Add a new team member, assign permissions, and issue a temporary password for first-time access.
+            </DialogDescription>
+          </DialogHeader>
+        </div>
 
-          <div className="grid gap-2">
-            <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              type="email"
-              placeholder="john.smith@example.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              disabled={success}
-              autoComplete="off"
-            />
-            <p className="text-xs text-muted-foreground">Internal email addresses preferable.</p>
-          </div>
+        <form onSubmit={handleSubmit} className="space-y-5 p-6">
+          <section className="grid gap-4 rounded-xl border bg-card p-4 md:grid-cols-2">
+            <div className="grid gap-2">
+              <Label htmlFor="fullName">Full Name</Label>
+              <Input
+                id="fullName"
+                placeholder="John Smith"
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                required
+                disabled={success}
+              />
+            </div>
 
-          <div className="grid gap-2">
-            <Label htmlFor="tempPassword">Temporary Password</Label>
+            <div className="grid gap-2">
+              <Label htmlFor="email" className="inline-flex items-center gap-2">
+                <Mail className="h-3.5 w-3.5 text-muted-foreground" />
+                Work Email
+              </Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="john.smith@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                disabled={success}
+                autoComplete="off"
+              />
+              <p className="text-xs text-muted-foreground">Use an internal address where possible.</p>
+            </div>
+          </section>
+
+          <section className="space-y-3 rounded-xl border bg-card p-4">
+            <div className="flex items-center justify-between gap-3">
+              <Label htmlFor="tempPassword" className="inline-flex items-center gap-2">
+                <KeyRound className="h-3.5 w-3.5 text-muted-foreground" />
+                Temporary Password
+              </Label>
+              <p className="text-xs text-muted-foreground">Required to be changed on first login</p>
+            </div>
+
             <div className="flex gap-2">
               <Input
                 id="tempPassword"
@@ -188,17 +209,19 @@ export function CreateUserButton({ departments }: CreateUserButtonProps) {
                 size="icon"
                 onClick={copyPassword}
               >
-                {copied ? <Check className="h-4 w-4 text-green-600" /> : <Copy className="h-4 w-4" />}
+                {copied ? <Check className="h-4 w-4 text-emerald-600" /> : <Copy className="h-4 w-4" />}
               </Button>
             </div>
-            <p className="text-xs text-muted-foreground">User will be required to change this on first login</p>
-          </div>
+          </section>
 
-          <div className="grid grid-cols-2 gap-4">
+          <section className="grid gap-4 rounded-xl border bg-card p-4 md:grid-cols-2">
             <div className="grid gap-2">
-              <Label htmlFor="role">Role</Label>
+              <Label htmlFor="role" className="inline-flex items-center gap-2">
+                <ShieldCheck className="h-3.5 w-3.5 text-muted-foreground" />
+                Role
+              </Label>
               <Select value={role} onValueChange={(v) => setRole(v as typeof role)} disabled={success}>
-                <SelectTrigger className="w-full cursor-pointer">
+                <SelectTrigger className="w-full cursor-pointer bg-background">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -209,9 +232,12 @@ export function CreateUserButton({ departments }: CreateUserButtonProps) {
             </div>
 
             <div className="grid gap-2">
-              <Label htmlFor="department">Department</Label>
+              <Label htmlFor="department" className="inline-flex items-center gap-2">
+                <Building2 className="h-3.5 w-3.5 text-muted-foreground" />
+                Department
+              </Label>
               <Select value={departmentId} onValueChange={setDepartmentId} disabled={success}>
-                <SelectTrigger className="w-full cursor-pointer">
+                <SelectTrigger className="w-full cursor-pointer bg-background">
                   <SelectValue placeholder="Select..." />
                 </SelectTrigger>
                 <SelectContent>
@@ -223,30 +249,33 @@ export function CreateUserButton({ departments }: CreateUserButtonProps) {
                 </SelectContent>
               </Select>
             </div>
-          </div>
+          </section>
 
-          {error && <p className="text-sm text-destructive bg-destructive/10 p-3 rounded-lg">{error}</p>}
+          {error && <p className="rounded-lg border border-destructive/20 bg-destructive/10 p-3 text-sm text-destructive">{error}</p>}
 
           {success && (
-            <div className="space-y-2 bg-green-500/10 border border-green-500/20 p-4 rounded-lg">
-              <p className="text-sm font-semibold text-green-700 dark:text-green-400">
-                ✓ User account created successfully!
-              </p>
-              <div className="text-sm space-y-1">
-                <p><strong>Email:</strong> {email}</p>
-                <p><strong>Temporary Password:</strong> <code className="font-mono bg-black/5 px-1 rounded">{tempPassword}</code></p>
+            <div className="space-y-2 rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-4">
+              <p className="text-sm font-semibold text-emerald-700 dark:text-emerald-400">User account created successfully.</p>
+              <div className="space-y-1 text-sm">
+                <p>
+                  <strong>Email:</strong> {email}
+                </p>
+                <p>
+                  <strong>Temporary Password:</strong>{" "}
+                  <code className="rounded bg-black/5 px-1 font-mono">{tempPassword}</code>
+                </p>
               </div>
               <p className="text-xs text-muted-foreground">
-                ⚠️ Make sure to share these credentials with the user. They will be required to change the password on first login.
+                Share these credentials securely with the team member. They will be prompted to change the password at first sign-in.
               </p>
             </div>
           )}
 
-          <div className="flex justify-end gap-3 pt-2">
-            <Button 
+          <div className="flex flex-wrap justify-end gap-3 border-t pt-4">
+            <Button
               className="cursor-pointer"
-              type="button" 
-              variant="outline" 
+              type="button"
+              variant="outline"
               onClick={() => {
                 setOpen(false)
                 if (success) {
@@ -262,7 +291,7 @@ export function CreateUserButton({ departments }: CreateUserButtonProps) {
               </Button>
             ) : (
               <Button className="cursor-pointer" type="submit" disabled={isLoading}>
-                {isLoading ? "Creating..." : "Create User"}
+                {isLoading ? "Creating Account..." : "Create User"}
               </Button>
             )}
           </div>

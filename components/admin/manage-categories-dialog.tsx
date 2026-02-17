@@ -98,55 +98,70 @@ export function ManageCategoriesDialog({ categories, categoryMap }: ManageCatego
             Manage Categories
           </Button>
         </DialogTrigger>
-        <DialogContent className="sm:max-w-lg max-h-[80vh] flex flex-col">
-          <DialogHeader>
-            <DialogTitle>Manage Categories</DialogTitle>
-            <DialogDescription>Add or remove resource categories</DialogDescription>
-          </DialogHeader>
+        <DialogContent className="max-h-[90vh] overflow-y-auto p-0 sm:max-w-3xl">
+          <div className="border-b bg-gradient-to-r from-primary/10 via-primary/5 to-transparent px-6 py-5">
+            <DialogHeader className="space-y-2 text-left">
+              <div className="inline-flex w-fit items-center gap-2 rounded-full border bg-background/85 px-3 py-1 text-xs font-medium text-muted-foreground">
+                <FolderKanban className="h-3.5 w-3.5" />
+                Resource Library
+              </div>
+              <DialogTitle className="text-xl tracking-tight">Manage Categories</DialogTitle>
+              <DialogDescription className="text-sm">
+                Create and organize resource categories so policies and procedures stay easy to find.
+              </DialogDescription>
+            </DialogHeader>
+          </div>
 
-          <div className="space-y-6">
-            <form onSubmit={handleAddCategory} className="space-y-3">
-              <div className="space-y-2">
+          <div className="space-y-5 p-6">
+            <section className="space-y-3 rounded-xl border bg-card p-4">
+              <form onSubmit={handleAddCategory} className="space-y-2.5">
                 <Label htmlFor="new-category">Add New Category</Label>
-                <div className="flex gap-2">
+                <div className="flex flex-wrap gap-2">
                   <Input
                     id="new-category"
                     placeholder="e.g., Front Desk, Policies"
                     value={newCategory}
+                    className="h-11 flex-1 bg-white"
                     onChange={(e) => {
                       setNewCategory(e.target.value)
                       setError(null)
                     }}
                   />
                   <Button className="cursor-pointer" type="submit" disabled={loading || !newCategory.trim()}>
-                    <Plus className="h-4 w-4" />
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add
                   </Button>
                 </div>
-                {error && <p className="text-sm text-destructive">{error}</p>}
-              </div>
-            </form>
+                {error && <p className="rounded-lg border border-destructive/20 bg-destructive/10 p-3 text-sm text-destructive">{error}</p>}
+              </form>
+            </section>
 
-            <div className="space-y-3">
-              <Label>Existing Categories ({categories.length})</Label>
-              <div className="max-h-[300px] overflow-y-auto space-y-2 pr-2">
+            <section className="space-y-3 rounded-xl border bg-card p-4">
+              <div className="flex items-center justify-between gap-2">
+                <Label>Existing Categories</Label>
+                <Badge variant="secondary">{categories.length}</Badge>
+              </div>
+
+              <div className="max-h-[320px] space-y-2 overflow-y-auto pr-1">
                 {categories.length === 0 ? (
                   <Card className="border-dashed">
-                    <CardContent className="flex flex-col items-center justify-center py-8">
-                      <FolderOpen className="h-8 w-8 text-muted-foreground mb-2" />
-                      <p className="text-sm text-muted-foreground">No categories yet</p>
+                    <CardContent className="flex flex-col items-center justify-center py-10 text-center">
+                      <FolderOpen className="mb-2 h-8 w-8 text-muted-foreground" />
+                      <p className="text-sm font-medium">No categories yet</p>
+                      <p className="text-xs text-muted-foreground">Create your first category to start organizing resources.</p>
                     </CardContent>
                   </Card>
                 ) : (
                   categories.map((category) => (
-                    <Card key={category} className="hover:border-primary/50 transition-colors">
-                      <CardContent className="flex items-center justify-between py-3">
+                    <Card key={category} className="border-border/70 transition-colors hover:border-primary/40">
+                      <CardContent className="flex items-center justify-between gap-3 py-3">
                         <div className="flex items-center gap-3">
-                          <div className="p-2 rounded-lg bg-primary/10">
+                          <div className="rounded-lg border bg-background/90 p-2">
                             <FolderOpen className="h-4 w-4 text-primary" />
                           </div>
                           <div>
-                            <p className="font-medium">{category}</p>
-                            <p className="text-xs text-muted-foreground">
+                            <p className="font-medium leading-none">{category}</p>
+                            <p className="mt-1 text-xs text-muted-foreground">
                               {categoryMap[category]} resource{categoryMap[category] !== 1 ? "s" : ""}
                             </p>
                           </div>
@@ -155,7 +170,7 @@ export function ManageCategoriesDialog({ categories, categoryMap }: ManageCatego
                           variant="ghost"
                           size="icon"
                           onClick={() => setDeleteCategory(category)}
-                          className="text-destructive hover:text-destructive cursor-pointer"
+                          className="cursor-pointer text-destructive hover:text-destructive"
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
@@ -164,7 +179,7 @@ export function ManageCategoriesDialog({ categories, categoryMap }: ManageCatego
                   ))
                 )}
               </div>
-            </div>
+            </section>
           </div>
         </DialogContent>
       </Dialog>

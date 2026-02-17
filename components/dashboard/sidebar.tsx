@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button"
 import {
   LayoutDashboard,
   ClipboardList,
+  Briefcase,
   CalendarDays,
   LogOut,
   Settings,
@@ -21,7 +22,8 @@ import {
   Bell,
   CalendarClock,
   BarChart3,
-  AlertCircle
+  AlertCircle,
+  type LucideIcon,
 } from "lucide-react"
 import { useEffect, useState } from "react"
 
@@ -74,7 +76,7 @@ export function Sidebar({ profile }: SidebarProps) {
     router.refresh()
   }
 
-  const staffLinks = [
+  const staffLinks: { href: string; label: string; icon: LucideIcon; badge?: number }[] = [
     { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
     { href: "/dashboard/notes", label: "Handover Notes", icon: ClipboardList },
     { href: "/dashboard/calendar", label: "Calendar View", icon: CalendarDays },
@@ -82,27 +84,29 @@ export function Sidebar({ profile }: SidebarProps) {
     { href: "/dashboard/complaints", label: "Complaints", icon: MessageSquareWarning },
     { href: "/dashboard/issues", label: "Issues (New)", icon: AlertCircle },
     { href: "/dashboard/notifications", label: "Notifications", icon: Bell, badge: unreadCount },
+    { href: "/dashboard/tasks", label: "Tasks", icon: Briefcase },
     { href: "/dashboard/schedule", label: "Schedule", icon: CalendarClock }, // Added Schedule link
-      { href: "/dashboard/reports", label: "Reports", icon: BarChart3 }, // Added Reports link
+    { href: "/dashboard/reports", label: "Reports", icon: BarChart3 }, // Added Reports link
   ]
 
-  const adminLinks = [
+  const adminLinks: { href: string; label: string; icon: LucideIcon }[] = [
     { href: "/admin", label: "Admin Dashboard", icon: Settings },
     { href: "/admin/users", label: "Manage Users", icon: Users },
     { href: "/admin/departments", label: "Departments", icon: Building2 },
     { href: "/admin/resources", label: "Manage Resources", icon: FileText },
     { href: "/admin/notifications", label: "Manage Notifications", icon: Bell },
+    { href: "/admin/tasks", label: "Manage Tasks", icon: Briefcase },
     { href: "/admin/schedule", label: "Manage Schedule", icon: CalendarClock }, // Added Manage Schedule link
   ]
 
   return (
     <aside className="flex h-screen w-64 flex-col border-r bg-card">
-      <div className="flex items-center justify-center gap-4 border-b px-4 py-2">
-        <div className="flex h-full w-full items-center justify-center">
+      <div className="flex gap-4 border-b px-4 py-2">
+        <div className="flex h-full w-full py-2 justify-center">
           <Image
-            src="/logo/hobson.png"
+            src="/logo/boh-logo-transparent.png"
             alt="Hobson Logo"
-            width={196}
+            width={128}
             height={128}
             className="object-contain"
           />
@@ -111,33 +115,37 @@ export function Sidebar({ profile }: SidebarProps) {
 
       <nav className="flex-1 space-y-1 p-4">
         <p className="px-3 py-2 text-xs font-medium text-muted-foreground uppercase tracking-wider">Staff</p>
-        {staffLinks.map((link) => (
-          <Link
-            key={link.href}
-            href={link.href}
-            className={cn(
-              "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors",
-              pathname === link.href
-                ? "bg-primary text-primary-foreground"
-                : "text-muted-foreground hover:bg-secondary hover:text-foreground",
-            )}
-          >
-            <link.icon className="h-4 w-4" />
-            <span className="flex-1">{link.label}</span>
-            {"badge" in link && link.badge > 0 && (
-              <span
-                className={cn(
-                  "flex h-5 min-w-5 items-center justify-center rounded-full text-xs font-medium px-1.5",
-                  pathname === link.href
-                    ? "bg-primary-foreground text-primary"
-                    : "bg-destructive text-destructive-foreground",
-                )}
-              >
-                {link.badge > 99 ? "99+" : link.badge}
-              </span>
-            )}
-          </Link>
-        ))}
+        {staffLinks.map((link) => {
+          const badgeCount = typeof link.badge === "number" ? link.badge : 0
+
+          return (
+            <Link
+              key={link.href}
+              href={link.href}
+              className={cn(
+                "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors",
+                pathname === link.href
+                  ? "bg-primary text-primary-foreground"
+                  : "text-muted-foreground hover:bg-secondary hover:text-foreground",
+              )}
+            >
+              <link.icon className="h-4 w-4" />
+              <span className="flex-1">{link.label}</span>
+              {badgeCount > 0 && (
+                <span
+                  className={cn(
+                    "flex h-5 min-w-5 items-center justify-center rounded-full text-xs font-medium px-1.5",
+                    pathname === link.href
+                      ? "bg-primary-foreground text-primary"
+                      : "bg-destructive text-destructive-foreground",
+                  )}
+                >
+                  {badgeCount > 99 ? "99+" : badgeCount}
+                </span>
+              )}
+            </Link>
+          )
+        })}
 
         {profile.role === "admin" && (
           <>
@@ -176,7 +184,7 @@ export function Sidebar({ profile }: SidebarProps) {
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-sm font-medium truncate">{profile.full_name}</p>
-            <p className="text-xs text-muted-foreground capitalize">{profile.role}</p>
+            <p className="text-xs text-muted-foreground capitalize">{profile.department ? ` ${profile.department.name}` : ""}</p>
           </div>
         </Link>
         <Button

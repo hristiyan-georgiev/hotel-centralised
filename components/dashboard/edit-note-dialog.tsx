@@ -7,7 +7,6 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
@@ -16,7 +15,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Loader2 } from "lucide-react"
+import { FilePenLine, FileText, Loader2, NotebookPen } from "lucide-react"
 import { toast } from "sonner"
 import type { HandoverNote, Category } from "@/lib/types"
 
@@ -67,6 +66,8 @@ export function EditNoteDialog({ note, categories, open, onOpenChange }: EditNot
       })
       .eq("id", note.id)
 
+    setLoading(false)
+
     if (updateError) {
       setError(updateError.message)
       toast.error("Failed to update note", {
@@ -81,51 +82,70 @@ export function EditNoteDialog({ note, categories, open, onOpenChange }: EditNot
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg">
-        <DialogHeader>
-          <DialogTitle>Edit Note</DialogTitle>
-          <DialogDescription>Update the handover note details</DialogDescription>
-        </DialogHeader>
+      <DialogContent className="max-h-[90vh] overflow-y-auto p-0 sm:max-w-2xl">
+        <div className="border-b bg-gradient-to-r from-primary/10 via-primary/5 to-transparent px-6 py-5">
+          <DialogHeader className="space-y-2 text-left">
+            <div className="inline-flex w-fit items-center gap-2 rounded-full border bg-background/85 px-3 py-1 text-xs font-medium text-muted-foreground">
+              <NotebookPen className="h-3.5 w-3.5" />
+              Shift Handover
+            </div>
+            <DialogTitle className="text-xl tracking-tight">Edit Handover Note</DialogTitle>
+            <DialogDescription className="text-sm">
+              Update the note details so the next shift has the latest and clearest context.
+            </DialogDescription>
+          </DialogHeader>
+        </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="edit-title">Title</Label>
-            <Input
-              id="edit-title"
-              value={formData.title}
-              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-              required
-            />
-          </div>
+        <form onSubmit={handleSubmit} className="space-y-5 p-6">
+          <section className="space-y-4 rounded-xl border bg-card p-4">
+            <div className="space-y-2">
+              <Label htmlFor="edit-title" className="inline-flex items-center gap-2">
+                <FilePenLine className="h-3.5 w-3.5 text-muted-foreground" />
+                Title
+              </Label>
+              <Input
+                id="edit-title"
+                value={formData.title}
+                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                required
+              />
+            </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="edit-content">Content</Label>
-            <Textarea
-              id="edit-content"
-              value={formData.content}
-              onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-              rows={6}
-              required
-            />
-          </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-content" className="inline-flex items-center gap-2">
+                <FileText className="h-3.5 w-3.5 text-muted-foreground" />
+                Details
+              </Label>
+              <Textarea
+                id="edit-content"
+                value={formData.content}
+                onChange={(e) => setFormData({ ...formData, content: e.target.value })}
+                rows={6}
+                required
+              />
+            </div>
+          </section>
 
-          <div className="grid grid-cols-2 gap-4">
+          <section className="grid grid-cols-1 gap-4 rounded-xl border bg-card p-4 sm:grid-cols-2">
             <div className="space-y-2">
               <Label htmlFor="edit-priority">Priority</Label>
               <Select value={formData.priority} onValueChange={(value) => setFormData({ ...formData, priority: value as any })}>
-                <SelectTrigger className="cursor-pointer w-full" id="edit-priority">
+                <SelectTrigger className="cursor-pointer w-full bg-white" id="edit-priority">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem className="cursor-pointer" value="low">
                     <span className="h-2 w-2 rounded-full" style={{ backgroundColor: "#a9a9a9ff" }} />
-                    Low</SelectItem>
+                    Low
+                  </SelectItem>
                   <SelectItem className="cursor-pointer" value="normal">
                     <span className="h-2 w-2 rounded-full" style={{ backgroundColor: "#00a103ff" }} />
-                    Normal</SelectItem>
+                    Normal
+                  </SelectItem>
                   <SelectItem className="cursor-pointer" value="urgent">
                     <span className="h-2 w-2 rounded-full" style={{ backgroundColor: "#ff0019ff" }} />
-                    Urgent</SelectItem>
+                    Urgent
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -136,7 +156,7 @@ export function EditNoteDialog({ note, categories, open, onOpenChange }: EditNot
                 value={formData.category_id}
                 onValueChange={(value) => setFormData({ ...formData, category_id: value })}
               >
-                <SelectTrigger className="cursor-pointer w-full" id="edit-category">
+                <SelectTrigger className="cursor-pointer w-full bg-white" id="edit-category">
                   <SelectValue placeholder="Select category" />
                 </SelectTrigger>
                 <SelectContent>
@@ -151,11 +171,11 @@ export function EditNoteDialog({ note, categories, open, onOpenChange }: EditNot
                 </SelectContent>
               </Select>
             </div>
-          </div>
+          </section>
 
-          {error && <p className="text-sm text-destructive">{error}</p>}
+          {error && <p className="rounded-lg border border-destructive/20 bg-destructive/10 p-3 text-sm text-destructive">{error}</p>}
 
-          <DialogFooter>
+          <div className="flex justify-end gap-3 border-t pt-4">
             <Button className="cursor-pointer" type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Cancel
             </Button>
@@ -163,7 +183,7 @@ export function EditNoteDialog({ note, categories, open, onOpenChange }: EditNot
               {loading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
               Save Changes
             </Button>
-          </DialogFooter>
+          </div>
         </form>
       </DialogContent>
     </Dialog>

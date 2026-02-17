@@ -1,10 +1,10 @@
 import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
+import { PencilLine } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import { NotesList } from "@/components/dashboard/notes-list"
 import { CreateNoteButton } from "@/components/dashboard/create-note-button"
 import { DatePicker } from "@/components/dashboard/date-picker"
-import { ClipboardList, AlertCircle, TrendingUp } from "lucide-react"
 import type { HandoverNote, Profile, Category } from "@/lib/types"
 
 interface NotesPageProps {
@@ -38,70 +38,48 @@ export default async function NotesPage({ searchParams }: NotesPageProps) {
 
   const { data: categories } = await supabase.from("categories").select("*").order("name")
 
-  // Calculate stats
-  const totalNotes = notes?.length || 0
-  const urgentNotes = notes?.filter((n) => n.priority === "urgent").length || 0
-  const myNotes = notes?.filter((n) => n.author_id === user.id).length || 0
-
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex items-start justify-between">
-        <div className="flex items-center gap-3">
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary">
-            <ClipboardList className="h-6 w-6 text-primary-foreground" />
-          </div>
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight">Handover Notes</h1>
-            <p className="text-muted-foreground text-sm">Browse and manage daily handover notes</p>
-          </div>
-        </div>
-        {profile.department_id && (
-          <CreateNoteButton profile={profile as Profile} categories={(categories || []) as Category[]} />
-        )}
-      </div>
-
-      <div className="flex items-center gap-4 text-sm">
-            <div className="flex items-center gap-2 bg-blue-500/5 rounded-md">
-              <div className="flex items-center gap-1.5 text-muted-foreground p-1">
-                <ClipboardList className="h-4 w-4" />
-                <span className="font-medium text-foreground">{totalNotes}</span>
-                <span>notes</span>
+    <div className="min-h-full bg-background p-4 sm:p-6 lg:p-8">
+      <div className="w-full space-y-6">
+        <Card className="border-border/70 bg-gradient-to-r from-slate-500/10 via-transparent to-transparent">
+          <CardContent className="flex flex-col gap-5 p-6 md:flex-row md:items-start md:justify-between">
+            <div className="flex items-start gap-4">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
+                <PencilLine className="h-6 w-6 text-primary" />
+              </div>
+              <div>
+                <h1 className="text-2xl font-semibold tracking-tight">Handover Notes</h1>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Clean, shift-ready records for teams to pick up where the previous team left off.
+                </p>
               </div>
             </div>
-            {urgentNotes > 0 && (
-              <div className="flex items-center gap-2 bg-red-500/5 rounded-md">
-                <div className="flex items-center gap-1.5 text-muted-foreground p-1">
-                  <AlertCircle className="h-4 w-4 text-red-500" />
-                  <span className="font-medium text-foreground">{urgentNotes}</span>
-                  <span>urgent</span>
-                </div>
-              </div>
-            )}
-            <div className="flex items-center gap-2 bg-green-500/5 rounded-md">
-              <div className="flex items-center gap-1.5 text-muted-foreground p-1">
-                <TrendingUp className="h-4 w-4" />
-                <span className="font-medium text-foreground">{myNotes}</span>
-                <span>by you</span>
-              </div>
+
+            <div className="flex flex-col gap-3 md:items-end">
+              <DatePicker selectedDate={selectedDate} />
+              {profile.department_id && (
+                <CreateNoteButton profile={profile as Profile} categories={(categories || []) as Category[]} />
+              )}
             </div>
-          </div>
-
-      <DatePicker selectedDate={selectedDate} />
-
-      {!profile.department_id ? (
-        <Card className="border-dashed">
-          <CardContent className="py-12 text-center">
-            <p className="text-muted-foreground">You haven't been assigned to a department yet. Contact your admin.</p>
           </CardContent>
         </Card>
-      ) : (
-        <NotesList 
-          notes={(notes || []) as HandoverNote[]} 
-          currentUserId={user.id}
-          categories={(categories || []) as Category[]}
-          userRole={profile.role}
-        />
-      )}
+
+        {!profile.department_id ? (
+          <Card className="border-dashed">
+            <CardContent className="py-12 text-center">
+              <p className="text-muted-foreground">You haven&apos;t been assigned to a department yet. Contact your admin.</p>
+            </CardContent>
+          </Card>
+        ) : (
+          <NotesList
+            notes={(notes || []) as HandoverNote[]}
+            currentUserId={user.id}
+            categories={(categories || []) as Category[]}
+            selectedDate={selectedDate}
+            userRole={profile.role}
+          />
+        )}
+      </div>
     </div>
   )
 }

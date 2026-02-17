@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -17,7 +18,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { Search, Pencil, Trash2, FileText, Clock, Layers } from "lucide-react"
+import { Search, Pencil, Trash2, FileText, FolderOpen } from "lucide-react"
 import { toast } from "sonner"
 import type { Resource } from "@/lib/types"
 import { EditResourceDialog } from "./edit-resource-dialog"
@@ -30,28 +31,40 @@ interface AdminResourcesListProps {
 export function AdminResourcesList({ resources, categories }: AdminResourcesListProps) {
   const router = useRouter()
   const [searchQuery, setSearchQuery] = useState("")
+  const [selectedCategory, setSelectedCategory] = useState<string>("all")
   const [deleteResource, setDeleteResource] = useState<Resource | null>(null)
   const [editResource, setEditResource] = useState<Resource | null>(null)
   const [deleting, setDeleting] = useState(false)
 
-  const filteredResources = resources.filter(
-    (r) =>
-      r.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      r.content.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      r.category.toLowerCase().includes(searchQuery.toLowerCase()),
+  const normalizedQuery = searchQuery.trim().toLowerCase()
+
+  const categoryCounts = resources.reduce(
+    (acc, resource) => {
+      acc[resource.category] = (acc[resource.category] || 0) + 1
+      return acc
+    },
+    {} as Record<string, number>,
   )
 
-  // Group resources by category
-  const groupedResources = filteredResources.reduce((acc, resource) => {
-    const category = resource.category
-    if (!acc[category]) {
-      acc[category] = []
-    }
-    acc[category].push(resource)
-    return acc
-  }, {} as Record<string, Resource[]>)
+  const sortedCategories = (categories.length > 0 ? categories : Object.keys(categoryCounts)).sort()
 
-  const sortedCategories = Object.keys(groupedResources).sort()
+  const filteredResources = resources
+    .filter((resource) => selectedCategory === "all" || resource.category === selectedCategory)
+    .filter((resource) => {
+      if (!normalizedQuery) return true
+
+      return (
+        resource.title.toLowerCase().includes(normalizedQuery) ||
+        resource.content.toLowerCase().includes(normalizedQuery) ||
+        resource.category.toLowerCase().includes(normalizedQuery)
+      )
+    })
+    .sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime())
+
+  const clearFilters = () => {
+    setSearchQuery("")
+    setSelectedCategory("all")
+  }
 
   const handleDelete = async () => {
     if (!deleteResource) return
@@ -62,7 +75,7 @@ export function AdminResourcesList({ resources, categories }: AdminResourcesList
 
     if (error) {
       toast.error("Failed to delete resource", {
-        description: error.message
+        description: error.message,
       })
     } else {
       toast.success("Resource deleted successfully")
@@ -75,106 +88,193 @@ export function AdminResourcesList({ resources, categories }: AdminResourcesList
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between gap-4">
-        <div className="relative max-w-md flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search resources..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10"
-          />
-        </div>
-        {searchQuery && (
-          <div className="text-sm text-muted-foreground">
-            Showing {filteredResources.length} of {resources.length} resources
-          </div>
-        )}
-      </div>
+      <div className="grid gap-4 xl:grid-cols-[280px_minmax(0,1fr)]">
+        <Card className="border-border/60">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base">Library Index</CardTitle>
+            <CardDescription>Jump to a category to find documentation faster.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <Button
+              type="button"
+              variant={selectedCategory === "all" ? "default" : "outline"}
+              className="w-full justify-between cursor-pointer"
+              onClick={() => setSelectedCategory("all")}
+            >
+              <span>All Resources</span>
+              <Badge variant="secondary" className="ml-2 font-normal">
+                {resources.length}
+              </Badge>
+            </Button>
 
-      {filteredResources.length === 0 ? (
-        <Card className="border-dashed">
-          <CardContent className="flex flex-col items-center justify-center py-16">
-            <div className="p-4 rounded-full bg-muted mb-4">
-              <FileText className="h-10 w-10 text-muted-foreground" />
+            <div className="space-y-1 pr-1 xl:max-h-[430px] xl:overflow-y-auto">
+              {sortedCategories.length === 0 ? (
+                <div className="rounded-lg border border-dashed p-3 text-sm text-muted-foreground">
+                  No categories available yet.
+                </div>
+              ) : (
+                sortedCategories.map((category) => {
+                  const isActive = selectedCategory === category
+                  return (
+                    <Button
+                      type="button"
+                      key={category}
+                      variant={isActive ? "secondary" : "ghost"}
+                      className="w-full justify-between cursor-pointer"
+                      onClick={() => setSelectedCategory(category)}
+                    >
+                      <span className="truncate">{category}</span>
+                      <Badge variant="outline" className="ml-2 font-normal">
+                        {categoryCounts[category] || 0}
+                      </Badge>
+                    </Button>
+                  )
+                })
+              )}
             </div>
-            <p className="text-lg font-medium mb-1">
-              {resources.length === 0 ? "No resources created yet" : "No resources found"}
-            </p>
-            <p className="text-muted-foreground text-sm">
-              {resources.length === 0 ? "Create your first resource to get started" : "Try adjusting your search query"}
-            </p>
+
+            <div className="rounded-lg bg-muted/40 p-3 text-xs text-muted-foreground">
+              Showing <span className="font-semibold text-foreground">{filteredResources.length}</span> of{" "}
+              <span className="font-semibold text-foreground">{resources.length}</span> resources.
+            </div>
           </CardContent>
         </Card>
-      ) : (
-        <div className="space-y-8">
-          {sortedCategories.map((category) => (
-            <div key={category} className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-lg bg-primary/10">
-                    <Layers className="h-4 w-4 text-primary" />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-semibold">{category}</h3>
-                    <p className="text-sm text-muted-foreground">
-                      {groupedResources[category].length} resource{groupedResources[category].length !== 1 ? "s" : ""}
-                    </p>
-                  </div>
-                </div>
+
+        <Card className="border-border/60 overflow-hidden">
+          <CardHeader className="border-b bg-muted/20">
+            <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+              <div>
+                <CardTitle className="text-base">Resources Directory</CardTitle>
+                <CardDescription>Search by title, category, or content snippet.</CardDescription>
               </div>
 
-              <div className="grid gap-3">
-                {groupedResources[category].map((resource) => (
-                  <Card key={resource.id} className="hover:border-primary/50 hover:shadow-sm transition-all group">
-                    <CardHeader className="pb-3">
-                      <div className="flex items-start justify-between gap-4">
-                        <div className="space-y-2 min-w-0 flex-1">
-                          <CardTitle className="text-base font-semibold group-hover:text-primary transition-colors">
-                            {resource.title}
-                          </CardTitle>
-                          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                            <Clock className="h-3 w-3" />
-                            <span>
-                              Updated {new Date(resource.updated_at).toLocaleDateString([], { 
-                                month: 'short', 
-                                day: 'numeric',
-                                year: 'numeric'
-                              })} at {new Date(resource.updated_at).toLocaleTimeString([], { 
-                                hour: '2-digit', 
-                                minute: '2-digit' 
-                              })}
-                            </span>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-2 shrink-0">
-                          <Button 
-                            variant="outline" 
-                            size="icon" 
-                            className="h-8 w-8 cursor-pointer"
-                            onClick={() => setEditResource(resource)}
-                          >
-                            <Pencil className="h-3.5 w-3.5" />
-                          </Button>
-                          <Button 
-                            variant="outline" 
-                            size="icon" 
-                            className="h-8 w-8 text-destructive hover:text-destructive cursor-pointer"
-                            onClick={() => setDeleteResource(resource)}
-                          >
-                            <Trash2 className="h-3.5 w-3.5" />
-                          </Button>
-                        </div>
-                      </div>
-                    </CardHeader>
-                    <CardContent>
-                      <p className="text-sm text-muted-foreground line-clamp-3">{resource.content}</p>
-                    </CardContent>
-                  </Card>
-                ))}
+              <div className="relative w-full md:max-w-md">
+                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  placeholder="Search resources..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10"
+                />
               </div>
             </div>
-          ))}
+
+            <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+              <Badge variant="secondary" className="font-normal">
+                {filteredResources.length} result{filteredResources.length !== 1 ? "s" : ""}
+              </Badge>
+              {selectedCategory !== "all" && (
+                <Badge variant="outline" className="font-normal">
+                  Category: {selectedCategory}
+                </Badge>
+              )}
+              {(selectedCategory !== "all" || normalizedQuery) && (
+                <Button type="button" variant="ghost" size="sm" className="h-7 px-2" onClick={clearFilters}>
+                  Clear filters
+                </Button>
+              )}
+            </div>
+          </CardHeader>
+
+          <CardContent className="p-0">
+            {filteredResources.length === 0 ? (
+              <div className="flex flex-col items-center justify-center px-6 py-16 text-center">
+                <div className="mb-4 rounded-full bg-muted p-4">
+                  <FileText className="h-8 w-8 text-muted-foreground" />
+                </div>
+                <p className="text-lg font-medium mb-1">
+                  {resources.length === 0 ? "No resources created yet" : "No resources match your filters"}
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  {resources.length === 0
+                    ? "Create your first resource to get started."
+                    : "Try a different search term or switch category."}
+                </p>
+              </div>
+            ) : (
+              <div className="max-h-[560px] overflow-auto">
+                <Table>
+                  <TableHeader className="sticky top-0 z-10 bg-background">
+                    <TableRow className="hover:bg-background">
+                      <TableHead className="pl-5">Resource</TableHead>
+                      <TableHead>Category</TableHead>
+                      <TableHead>Updated</TableHead>
+                      <TableHead className="min-w-[320px]">Preview</TableHead>
+                      <TableHead className="text-right pr-5">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredResources.map((resource) => (
+                      <TableRow key={resource.id}>
+                        <TableCell className="pl-5 py-4 align-top">
+                          <div className="space-y-1">
+                            <p className="font-medium leading-tight">{resource.title}</p>
+                            <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                              <FolderOpen className="h-3 w-3" />
+                              <span>Library entry</span>
+                            </div>
+                          </div>
+                        </TableCell>
+
+                        <TableCell className="py-4 align-top">
+                          <Badge variant="outline" className="font-normal">
+                            {resource.category}
+                          </Badge>
+                        </TableCell>
+
+                        <TableCell className="py-4 align-top whitespace-nowrap text-sm text-muted-foreground">
+                          <span className="block">
+                            {new Date(resource.updated_at).toLocaleDateString([], {
+                              month: "short",
+                              day: "numeric",
+                              year: "numeric",
+                            })}
+                          </span>
+                          <span className="block text-xs">
+                            {new Date(resource.updated_at).toLocaleTimeString([], {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}
+                          </span>
+                        </TableCell>
+
+                        <TableCell className="py-4 align-top max-w-[460px]">
+                          <p className="line-clamp-2 whitespace-normal text-sm text-muted-foreground">{resource.content}</p>
+                        </TableCell>
+
+                        <TableCell className="py-4 pr-5 align-top">
+                          <div className="flex items-center justify-end gap-2">
+                            <Button
+                              variant="outline"
+                              size="icon"
+                              className="h-8 w-8 cursor-pointer"
+                              onClick={() => setEditResource(resource)}
+                            >
+                              <Pencil className="h-3.5 w-3.5" />
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="icon"
+                              className="h-8 w-8 text-destructive hover:text-destructive cursor-pointer"
+                              onClick={() => setDeleteResource(resource)}
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+      {(searchQuery || selectedCategory !== "all") && (
+        <div className="text-sm text-muted-foreground">
+          Active filters applied. Use <span className="font-medium text-foreground">Clear filters</span> to reset view.
         </div>
       )}
 

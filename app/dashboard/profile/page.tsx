@@ -6,8 +6,21 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { Badge } from "@/components/ui/badge"
+import { Separator } from "@/components/ui/separator"
 import { useState, useEffect } from "react"
-import { User, KeyRound, Mail, Briefcase, Building2 } from "lucide-react"
+import {
+  User,
+  KeyRound,
+  Mail,
+  Briefcase,
+  Building2,
+  CalendarClock,
+  ShieldCheck,
+  AlertCircle,
+  CheckCircle2,
+} from "lucide-react"
 import type { Profile } from "@/lib/types"
 
 export default function ProfilePage() {
@@ -115,131 +128,224 @@ export default function ProfilePage() {
   }
 
   if (!profile) {
-    return null
+    return (
+      <div className="p-6 md:p-8">
+        <Card className="mx-auto max-w-2xl">
+          <CardHeader>
+            <CardTitle>Unable to load profile</CardTitle>
+            <CardDescription>Please refresh the page and try again.</CardDescription>
+          </CardHeader>
+        </Card>
+      </div>
+    )
   }
 
+  const initials =
+    profile.full_name
+      ?.split(" ")
+      .filter(Boolean)
+      .map((namePart) => namePart[0])
+      .join("")
+      .slice(0, 2)
+      .toUpperCase() || "U"
+
+  const memberSince = new Date(profile.created_at).toLocaleDateString(undefined, {
+    month: "long",
+    year: "numeric",
+  })
+
   return (
-    <div className="p-6 space-y-6 mx-auto">
-      <div className="flex items-center gap-3">
-        <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary">
-          <User className="h-6 w-6 text-primary-foreground" />
-        </div>
-        <div>
-          <h1 className="text-2xl font-semibold">Profile</h1>
-          <p className="text-sm text-muted-foreground">Manage your account settings</p>
+    <div className="min-h-full w-full p-4 md:p-8 xl:p-10">
+      <div className="grid w-full grid-cols-1 gap-6 xl:grid-cols-[1.35fr_1fr]">
+        <section className="relative overflow-hidden rounded-2xl border bg-gradient-to-br from-primary/10 via-background to-background p-6 md:p-8 xl:col-span-2">
+          <div className="pointer-events-none absolute -top-20 right-0 h-56 w-56 rounded-full bg-primary/20 blur-3xl" />
+          <div className="pointer-events-none absolute bottom-0 left-0 h-44 w-44 rounded-full bg-primary/10 blur-3xl" />
+
+          <div className="relative flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+            <div className="flex items-center gap-4">
+              <Avatar className="h-16 w-16 border bg-background shadow-sm">
+                <AvatarFallback className="text-lg font-semibold text-primary">{initials}</AvatarFallback>
+              </Avatar>
+
+              <div className="space-y-2">
+                <div className="flex flex-wrap items-center gap-2">
+                  <h1 className="text-2xl font-semibold tracking-tight">{profile.full_name}</h1>
+                  <Badge variant="secondary" className="capitalize">
+                    {profile.role}
+                  </Badge>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
+                  <span className="inline-flex items-center gap-1.5">
+                    <Mail className="h-4 w-4" />
+                    {profile.email}
+                  </span>
+                  {profile.department && (
+                    <span className="inline-flex items-center gap-1.5">
+                      <Building2 className="h-4 w-4" />
+                      {profile.department.name}
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <div className="rounded-xl border bg-background/70 p-4 backdrop-blur-sm">
+              <p className="text-xs uppercase tracking-wide text-muted-foreground">Profile Security</p>
+              <p className="mt-1 inline-flex items-center gap-2 text-sm font-medium">
+                <ShieldCheck className="h-4 w-4 text-primary" />
+                Keep your account protected
+              </p>
+            </div>
+          </div>
+
+          <div className="relative mt-6 grid gap-3 sm:grid-cols-3">
+            <div className="rounded-xl border bg-background/70 p-3">
+              <p className="text-xs uppercase tracking-wide text-muted-foreground">Role</p>
+              <p className="mt-1 font-medium capitalize">{profile.role}</p>
+            </div>
+            <div className="rounded-xl border bg-background/70 p-3">
+              <p className="text-xs uppercase tracking-wide text-muted-foreground">Department</p>
+              <p className="mt-1 font-medium">{profile.department?.name || "Not assigned"}</p>
+            </div>
+            <div className="rounded-xl border bg-background/70 p-3">
+              <p className="text-xs uppercase tracking-wide text-muted-foreground">Member since</p>
+              <p className="mt-1 inline-flex items-center gap-1.5 font-medium">
+                <CalendarClock className="h-4 w-4 text-muted-foreground" />
+                {memberSince}
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <div className="grid gap-6 xl:grid-cols-[1.1fr_1fr] xl:col-span-2">
+          <Card className="shadow-sm">
+            <CardHeader>
+              <CardTitle>Personal Information</CardTitle>
+              <CardDescription>Details associated with your account.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div className="rounded-xl border bg-muted/20 p-4">
+                  <Label className="flex items-center gap-2 text-muted-foreground">
+                    <User className="h-4 w-4" />
+                    Full Name
+                  </Label>
+                  <p className="mt-2 text-base font-medium">{profile.full_name}</p>
+                </div>
+
+                <div className="rounded-xl border bg-muted/20 p-4">
+                  <Label className="flex items-center gap-2 text-muted-foreground">
+                    <Mail className="h-4 w-4" />
+                    Email Address
+                  </Label>
+                  <p className="mt-2 break-all text-base font-medium">{profile.email}</p>
+                </div>
+
+                <div className="rounded-xl border bg-muted/20 p-4">
+                  <Label className="flex items-center gap-2 text-muted-foreground">
+                    <Briefcase className="h-4 w-4" />
+                    Role
+                  </Label>
+                  <p className="mt-2 text-base font-medium capitalize">{profile.role}</p>
+                </div>
+
+                <div className="rounded-xl border bg-muted/20 p-4">
+                  <Label className="flex items-center gap-2 text-muted-foreground">
+                    <Building2 className="h-4 w-4" />
+                    Department
+                  </Label>
+                  <p className="mt-2 text-base font-medium">{profile.department?.name || "Not assigned"}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="shadow-sm">
+            <CardHeader>
+              <div className="flex items-center gap-3">
+                <KeyRound className="h-5 w-5 text-primary" />
+                <div>
+                  <CardTitle>Change Password</CardTitle>
+                  <CardDescription>Use a strong password you do not reuse elsewhere.</CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="rounded-lg border border-dashed bg-muted/30 p-3 text-xs text-muted-foreground">
+                <p className="font-medium text-foreground">Password guidelines</p>
+                <ul className="mt-2 list-disc space-y-1 pl-4">
+                  <li>Minimum of 6 characters</li>
+                  <li>Use a mix of letters, numbers, and symbols</li>
+                  <li>Avoid reusing old passwords</li>
+                </ul>
+              </div>
+
+              <Separator />
+
+              <form onSubmit={handlePasswordChange} className="space-y-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="currentPassword">Current Password</Label>
+                  <Input
+                    id="currentPassword"
+                    type="password"
+                    placeholder="Enter your current password"
+                    value={currentPassword}
+                    onChange={(e) => setCurrentPassword(e.target.value)}
+                    autoComplete="current-password"
+                  />
+                </div>
+
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="grid gap-2">
+                    <Label htmlFor="newPassword">New Password</Label>
+                    <Input
+                      id="newPassword"
+                      type="password"
+                      placeholder="Minimum 6 characters"
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                      autoComplete="new-password"
+                      minLength={6}
+                    />
+                  </div>
+
+                  <div className="grid gap-2">
+                    <Label htmlFor="confirmPassword">Confirm New Password</Label>
+                    <Input
+                      id="confirmPassword"
+                      type="password"
+                      placeholder="Re-enter your new password"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      autoComplete="new-password"
+                      minLength={6}
+                    />
+                  </div>
+                </div>
+
+                {error && (
+                  <div className="flex items-start gap-2 rounded-lg bg-destructive/10 p-3 text-sm text-destructive">
+                    <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+                    <span>{error}</span>
+                  </div>
+                )}
+
+                {success && (
+                  <div className="flex items-start gap-2 rounded-lg bg-green-50 p-3 text-sm text-green-700 dark:bg-green-950/20 dark:text-green-400">
+                    <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" />
+                    <span>{success}</span>
+                  </div>
+                )}
+
+                <Button type="submit" className="w-full cursor-pointer sm:w-auto" disabled={isUpdating}>
+                  {isUpdating ? "Updating Password..." : "Update Password"}
+                </Button>
+              </form>
+            </CardContent>
+          </Card>
         </div>
       </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Personal Information</CardTitle>
-          <CardDescription>Your account details</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid gap-2">
-            <Label className="flex items-center gap-2 text-muted-foreground">
-              <User className="h-4 w-4" />
-              Full Name
-            </Label>
-            <p className="text-lg font-medium">{profile.full_name}</p>
-          </div>
-
-          <div className="grid gap-2">
-            <Label className="flex items-center gap-2 text-muted-foreground">
-              <Mail className="h-4 w-4" />
-              Email Address
-            </Label>
-            <p className="text-lg font-medium">{profile.email}</p>
-          </div>
-
-          <div className="grid gap-2">
-            <Label className="flex items-center gap-2 text-muted-foreground">
-              <Briefcase className="h-4 w-4" />
-              Role
-            </Label>
-            <p className="text-lg font-medium capitalize">{profile.role}</p>
-          </div>
-
-          {profile.department && (
-            <div className="grid gap-2">
-              <Label className="flex items-center gap-2 text-muted-foreground">
-                <Building2 className="h-4 w-4" />
-                Department
-              </Label>
-              <p className="text-lg font-medium">{profile.department.name}</p>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <div className="flex items-center gap-3">
-            <KeyRound className="h-5 w-5 text-primary" />
-            <div>
-              <CardTitle>Change Password</CardTitle>
-              <CardDescription>Update your password to keep your account secure</CardDescription>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handlePasswordChange} className="space-y-4">
-            <div className="grid gap-2">
-              <Label htmlFor="currentPassword">Current Password</Label>
-              <Input
-                id="currentPassword"
-                type="password"
-                placeholder="Enter your current password"
-                value={currentPassword}
-                onChange={(e) => setCurrentPassword(e.target.value)}
-                autoComplete="current-password"
-              />
-            </div>
-
-            <div className="grid gap-2">
-              <Label htmlFor="newPassword">New Password</Label>
-              <Input
-                id="newPassword"
-                type="password"
-                placeholder="Minimum 6 characters"
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-                autoComplete="new-password"
-                minLength={6}
-              />
-            </div>
-
-            <div className="grid gap-2">
-              <Label htmlFor="confirmPassword">Confirm New Password</Label>
-              <Input
-                id="confirmPassword"
-                type="password"
-                placeholder="Re-enter your new password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                autoComplete="new-password"
-                minLength={6}
-              />
-            </div>
-
-            {error && (
-              <div className="text-sm text-destructive bg-destructive/10 p-3 rounded-lg">
-                {error}
-              </div>
-            )}
-
-            {success && (
-              <div className="text-sm text-green-600 bg-green-50 dark:bg-green-950/20 p-3 rounded-lg">
-                {success}
-              </div>
-            )}
-
-            <Button type="submit" className="cursor-pointer" disabled={isUpdating}>
-              {isUpdating ? "Updating Password..." : "Update Password"}
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
     </div>
   )
 }

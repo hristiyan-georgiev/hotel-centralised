@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase/server"
-import { BookOpen, FolderOpen, Clock } from "lucide-react"
+import { BookOpen, FolderOpen, Clock3, LibraryBig } from "lucide-react"
 import type { Resource } from "@/lib/types"
 import { ResourcesList } from "@/components/resources/resources-list"
 import { Card, CardContent } from "@/components/ui/card"
@@ -33,63 +33,27 @@ export default async function ResourcesPage() {
     ? new Date(Math.max(...resources.map((r) => new Date(r.updated_at).getTime())))
     : null
 
+  const resourceTotal = resources?.length || 0
+  const categoryTotal = categories.length
+  const lastUpdatedLabel = mostRecent
+    ? mostRecent.toLocaleDateString([], { month: "short", day: "numeric", year: "numeric" })
+    : "N/A"
+
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex items-center gap-3">
-        <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary">
-          <BookOpen className="h-6 w-6 text-primary-foreground" />
-        </div>
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Resources</h1>
-          <p className="text-muted-foreground text-sm">Hotel procedures, policies, and reference materials</p>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card className="border-blue-500/20 bg-gradient-to-br from-blue-500/5 to-transparent">
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-3xl font-bold text-blue-600">{resources?.length || 0}</p>
-                <p className="text-sm font-medium text-muted-foreground mt-1">Total Resources</p>
-              </div>
-              <div className="p-3 rounded-xl bg-blue-500/10">
-                <BookOpen className="h-6 w-6 text-blue-500" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="border-purple-500/20 bg-gradient-to-br from-purple-500/5 to-transparent">
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-3xl font-bold text-purple-600">{categories.length}</p>
-                <p className="text-sm font-medium text-muted-foreground mt-1">Categories</p>
-              </div>
-              <div className="p-3 rounded-xl bg-purple-500/10">
-                <FolderOpen className="h-6 w-6 text-purple-500" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="border-emerald-500/20 bg-gradient-to-br from-emerald-500/5 to-transparent">
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-3xl font-bold text-emerald-600">
-                  {mostRecent ? mostRecent.toLocaleDateString([], { month: 'short', day: 'numeric' }) : 'N/A'}
-                </p>
-                <p className="text-sm font-medium text-muted-foreground mt-1">Last Updated</p>
-              </div>
-              <div className="p-3 rounded-xl bg-emerald-500/10">
-                <Clock className="h-6 w-6 text-emerald-500" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+    <div className="space-y-6 p-6">
+      <Card className="border-border/70 bg-gradient-to-r from-slate-500/10 via-transparent to-transparent">
+        <CardContent className="flex items-start gap-4 p-6">
+          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
+            <LibraryBig className="h-6 w-6 text-primary" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-semibold tracking-tight">Resources Library</h1>
+            <p className="text-sm text-muted-foreground">
+              Procedures, policies, and references for your shift.
+            </p>
+          </div>
+        </CardContent>
+      </Card>
 
       <ResourcesList groupedResources={groupedResources} categories={categories} />
     </div>

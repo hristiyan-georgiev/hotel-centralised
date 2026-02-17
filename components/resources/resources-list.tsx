@@ -1,11 +1,12 @@
 "use client"
 
-import { useState } from "react"
+import { Fragment, useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { Search, ChevronDown, ChevronUp, FileText, Clock, Layers } from "lucide-react"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Search, FileText, FolderOpen } from "lucide-react"
 import type { Resource } from "@/lib/types"
 
 interface ResourcesListProps {
@@ -15,136 +16,239 @@ interface ResourcesListProps {
 
 export function ResourcesList({ groupedResources, categories }: ResourcesListProps) {
   const [searchQuery, setSearchQuery] = useState("")
+  const [selectedCategory, setSelectedCategory] = useState<string>("all")
   const [expandedResource, setExpandedResource] = useState<string | null>(null)
 
-  const filteredCategories = categories.filter((category) => {
-    const resources = groupedResources[category]
-    return resources.some(
-      (r) =>
-        r.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        r.content.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        category.toLowerCase().includes(searchQuery.toLowerCase()),
-    )
-  })
+  const normalizedQuery = searchQuery.trim().toLowerCase()
+  const getCategoryLabel = (resource: Resource) => resource.category?.trim() || "General"
 
-  const getFilteredResources = (category: string) => {
-    return groupedResources[category].filter(
-      (r) =>
-        r.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        r.content.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        category.toLowerCase().includes(searchQuery.toLowerCase()),
-    )
+  const allResources = categories.flatMap((category) => groupedResources[category] || [])
+
+  const categoryCounts = allResources.reduce(
+    (acc, resource) => {
+      const categoryLabel = getCategoryLabel(resource)
+      acc[categoryLabel] = (acc[categoryLabel] || 0) + 1
+      return acc
+    },
+    {} as Record<string, number>,
+  )
+
+  const sortedCategories = (categories.length > 0 ? categories : Object.keys(categoryCounts)).sort()
+
+  const filteredResources = allResources
+    .filter((resource) => selectedCategory === "all" || getCategoryLabel(resource) === selectedCategory)
+    .filter((resource) => {
+      if (!normalizedQuery) return true
+
+      return (
+        resource.title.toLowerCase().includes(normalizedQuery) ||
+        resource.content.toLowerCase().includes(normalizedQuery) ||
+        getCategoryLabel(resource).toLowerCase().includes(normalizedQuery)
+      )
+    })
+    .sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime())
+
+  const clearFilters = () => {
+    setSearchQuery("")
+    setSelectedCategory("all")
   }
 
-  const totalResources = Object.values(groupedResources).flat().length
+  const toggleExpanded = (resourceId: string) => {
+    setExpandedResource((current) => (current === resourceId ? null : resourceId))
+  }
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-        <div className="relative max-w-md flex-1 w-full">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search resources..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10"
-          />
-        </div>
-        {searchQuery && (
-          <div className="text-sm text-muted-foreground">
-            Showing {filteredCategories.reduce((acc, cat) => acc + getFilteredResources(cat).length, 0)} of {totalResources} resources
-          </div>
-        )}
-      </div>
+      <div className="grid gap-4 xl:grid-cols-[280px_minmax(0,1fr)]">
+        <Card className="border-border/60">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base">Library Index</CardTitle>
+            <CardDescription>Browse by category to quickly locate a policy or procedure.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <Button
+              type="button"
+              variant={selectedCategory === "all" ? "default" : "outline"}
+              className="w-full justify-between"
+              onClick={() => setSelectedCategory("all")}
+            >
+              <span>All Resources</span>
+              <Badge variant="secondary" className="ml-2 font-normal">
+                {allResources.length}
+              </Badge>
+            </Button>
 
-      {filteredCategories.length === 0 ? (
-        <Card className="border-dashed">
-          <CardContent className="flex flex-col items-center justify-center py-16">
-            <div className="p-4 rounded-full bg-muted mb-4">
-              <FileText className="h-10 w-10 text-muted-foreground" />
+            <div className="space-y-1 pr-1 xl:max-h-[430px] xl:overflow-y-auto">
+              {sortedCategories.length === 0 ? (
+                <div className="rounded-lg border border-dashed p-3 text-sm text-muted-foreground">
+                  No categories available.
+                </div>
+              ) : (
+                sortedCategories.map((category) => {
+                  const isActive = selectedCategory === category
+                  return (
+                    <Button
+                      type="button"
+                      key={category}
+                      variant={isActive ? "secondary" : "ghost"}
+                      className="w-full justify-between"
+                      onClick={() => setSelectedCategory(category)}
+                    >
+                      <span className="truncate">{category}</span>
+                      <Badge variant="outline" className="ml-2 font-normal">
+                        {categoryCounts[category] || 0}
+                      </Badge>
+                    </Button>
+                  )
+                })
+              )}
             </div>
-            <p className="text-lg font-medium mb-1">No resources found</p>
-            <p className="text-muted-foreground text-sm">Try adjusting your search query</p>
+
+            <div className="rounded-lg bg-muted/40 p-3 text-xs text-muted-foreground">
+              Showing <span className="font-semibold text-foreground">{filteredResources.length}</span> of{" "}
+              <span className="font-semibold text-foreground">{allResources.length}</span> resources.
+            </div>
           </CardContent>
         </Card>
-      ) : (
-        <div className="space-y-8">
-          {filteredCategories.map((category) => {
-            const categoryResources = getFilteredResources(category)
-            return (
-            <div key={category} className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-lg bg-primary/10">
-                    <Layers className="h-4 w-4 text-primary" />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-semibold">{category}</h3>
-                    <p className="text-sm text-muted-foreground">
-                      {categoryResources.length} resource{categoryResources.length !== 1 ? "s" : ""}
-                    </p>
-                  </div>
-                </div>
+
+        <Card className="border-border/60 overflow-hidden">
+          <CardHeader className="border-b bg-muted/20">
+            <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+              <div>
+                <CardTitle className="text-base">Resources Directory</CardTitle>
+                <CardDescription>Search by title, category, or content snippet.</CardDescription>
               </div>
 
-              <div className="grid gap-3">
-                {categoryResources.map((resource) => (
-                  <Card 
-                    key={resource.id} 
-                    className={`overflow-hidden transition-all ${
-                      expandedResource === resource.id 
-                        ? "border-primary/50 shadow-md" 
-                        : "hover:border-primary/30 hover:shadow-sm"
-                    }`}
-                  >
-                    <CardHeader
-                      className="cursor-pointer group py-4"
-                      onClick={() => setExpandedResource(expandedResource === resource.id ? null : resource.id)}
-                    >
-                      <div className="flex items-start justify-between gap-4">
-                        <div className="space-y-1.5 min-w-0 flex-1">
-                          <CardTitle className="text-base font-semibold group-hover:text-primary transition-colors">
-                            {resource.title}
-                          </CardTitle>
-                          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                            <Clock className="h-3 w-3" />
-                            <span>
-                              Updated {new Date(resource.updated_at).toLocaleDateString([], { 
-                                month: 'short', 
-                                day: 'numeric',
-                                year: 'numeric'
-                              })}
-                            </span>
-                          </div>
-                        </div>
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
-                          className="shrink-0 h-8 w-8 cursor-pointer"
-                        >
-                          {expandedResource === resource.id ? (
-                            <ChevronUp className="h-4 w-4" />
-                          ) : (
-                            <ChevronDown className="h-4 w-4" />
-                          )}
-                        </Button>
-                      </div>
-                    </CardHeader>
-                    {expandedResource === resource.id && (
-                      <CardContent className="border-t bg-gradient-to-b from-secondary/30 to-secondary/10 pt-4 pb-5">
-                        <div className="prose prose-sm max-w-none">
-                          <div className="whitespace-pre-wrap text-sm leading-relaxed text-foreground/90">
-                            {resource.content}
-                          </div>
-                        </div>
-                      </CardContent>
-                    )}
-                  </Card>
-                ))}
+              <div className="relative w-full md:max-w-md">
+                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  placeholder="Search resources..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10"
+                />
               </div>
             </div>
-          )
-          })}
+
+            <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+              <Badge variant="secondary" className="font-normal">
+                {filteredResources.length} result{filteredResources.length !== 1 ? "s" : ""}
+              </Badge>
+              {selectedCategory !== "all" && (
+                <Badge variant="outline" className="font-normal">
+                  Category: {selectedCategory}
+                </Badge>
+              )}
+              {(selectedCategory !== "all" || normalizedQuery) && (
+                <Button type="button" variant="ghost" size="sm" className="h-7 px-2" onClick={clearFilters}>
+                  Clear filters
+                </Button>
+              )}
+            </div>
+          </CardHeader>
+
+          <CardContent className="p-0">
+            {filteredResources.length === 0 ? (
+              <div className="flex flex-col items-center justify-center px-6 py-16 text-center">
+                <div className="mb-4 rounded-full bg-muted p-4">
+                  <FileText className="h-8 w-8 text-muted-foreground" />
+                </div>
+                <p className="text-lg font-medium mb-1">No resources match your filters</p>
+                <p className="text-sm text-muted-foreground">Try another search term or switch category.</p>
+              </div>
+            ) : (
+              <div className="max-h-[560px] overflow-auto">
+                <Table>
+                  <TableHeader className="sticky top-0 z-10 bg-background">
+                    <TableRow className="hover:bg-background">
+                      <TableHead className="pl-5">Resource</TableHead>
+                      <TableHead>Category</TableHead>
+                      <TableHead>Updated</TableHead>
+                      <TableHead className="min-w-[300px]">Preview</TableHead>
+                      <TableHead className="text-right pr-5">Details</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredResources.map((resource) => {
+                      const isExpanded = expandedResource === resource.id
+
+                      return (
+                        <Fragment key={resource.id}>
+                          <TableRow>
+                            <TableCell className="pl-5 py-4 align-top">
+                              <div className="space-y-1">
+                                <p className="font-medium leading-tight">{resource.title}</p>
+                                <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                                  <FolderOpen className="h-3 w-3" />
+                                  <span>Knowledge base entry</span>
+                                </div>
+                              </div>
+                            </TableCell>
+
+                            <TableCell className="py-4 align-top">
+                              <Badge variant="outline" className="font-normal">
+                                {getCategoryLabel(resource)}
+                              </Badge>
+                            </TableCell>
+
+                            <TableCell className="py-4 align-top whitespace-nowrap text-sm text-muted-foreground">
+                              <span className="block">
+                                {new Date(resource.updated_at).toLocaleDateString([], {
+                                  month: "short",
+                                  day: "numeric",
+                                  year: "numeric",
+                                })}
+                              </span>
+                              <span className="block text-xs">
+                                {new Date(resource.updated_at).toLocaleTimeString([], {
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                })}
+                              </span>
+                            </TableCell>
+
+                            <TableCell className="py-4 align-top max-w-[460px]">
+                              <p className="line-clamp-2 whitespace-normal text-sm text-muted-foreground">{resource.content}</p>
+                            </TableCell>
+
+                            <TableCell className="py-4 pr-5 align-top">
+                              <div className="flex justify-end">
+                                <Button
+                                  type="button"
+                                  variant={isExpanded ? "secondary" : "outline"}
+                                  size="sm"
+                                  className="h-8"
+                                  onClick={() => toggleExpanded(resource.id)}
+                                >
+                                  {isExpanded ? "Hide" : "Read"}
+                                </Button>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+
+                          {isExpanded && (
+                            <TableRow className="hover:bg-muted/30 bg-muted/20">
+                              <TableCell colSpan={5} className="px-5 py-4 whitespace-normal">
+                                <div className="rounded-md border bg-background p-4 text-sm leading-relaxed whitespace-pre-wrap">
+                                  {resource.content}
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          )}
+                        </Fragment>
+                      )
+                    })}
+                  </TableBody>
+                </Table>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+      {(searchQuery || selectedCategory !== "all") && (
+        <div className="text-sm text-muted-foreground">
+          Active filters applied. Use <span className="font-medium text-foreground">Clear filters</span> to reset view.
         </div>
       )}
     </div>

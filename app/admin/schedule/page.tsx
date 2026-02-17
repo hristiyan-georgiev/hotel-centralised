@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
 import { AdminScheduleManager } from "@/components/admin/admin-schedule-manager"
+import { Card, CardContent } from "@/components/ui/card"
 import type { Profile, Department, Shift, ScheduleEvent, ScheduleTask } from "@/lib/types"
 import { CalendarClock } from "lucide-react"
 
@@ -67,16 +68,18 @@ export default async function AdminSchedulePage() {
     .order("full_name")
 
   return (
-    <div className="p-6">
-      <div className="mb-8 flex items-center gap-3">
-        <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary">
-          <CalendarClock className="h-6 w-6 text-primary-foreground" />
-        </div>
-        <div>
-          <h1 className="text-2xl font-bold">Manage Schedule</h1>
-          <p className="text-muted-foreground text-sm">Create and manage shifts, events, and tasks for staff</p>
-        </div>
-      </div>
+    <div className="space-y-6 p-6">
+      <Card className="border-border/70 bg-gradient-to-r from-slate-500/10 via-transparent to-transparent">
+        <CardContent className="flex items-start gap-4 p-6">
+          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
+            <CalendarClock className="h-6 w-6 text-primary" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-semibold tracking-tight">Manage Schedule</h1>
+            <p className="text-sm text-muted-foreground">Create and manage shifts, events, and tasks for staff.</p>
+          </div>
+        </CardContent>
+      </Card>
 
       <AdminScheduleManager
         shifts={(shifts as Shift[]) || []}

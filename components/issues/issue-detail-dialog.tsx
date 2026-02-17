@@ -9,8 +9,8 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Separator } from "@/components/ui/separator"
 import { ScrollArea } from "@/components/ui/scroll-area"
+import { cn } from "@/lib/utils"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -22,7 +22,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
-import { CheckCircle2, Trash2, Send, User, Clock, Edit2, X, AlertTriangle } from "lucide-react"
+import { CheckCircle2, Trash2, Send, User, Clock, Edit2, X, AlertTriangle, AlertCircle, MessageSquare, Wrench } from "lucide-react"
 import { toast } from "sonner"
 import type { Issue, IssueComment, Profile } from "@/lib/types"
 
@@ -196,235 +196,319 @@ export function IssueDetailDialog({
     }
   }
 
-  const statusColors = {
-    open: "bg-orange-500/10 text-orange-600 border-orange-500/20",
-    resolved: "bg-green-500/10 text-green-600 border-green-500/20",
+  const statusStyles = {
+    open: "bg-amber-500/10 text-amber-700 border-amber-500/20",
+    resolved: "bg-emerald-500/10 text-emerald-700 border-emerald-500/20",
   }
 
-  const priorityColors = {
-    low: "bg-green-500/10 text-green-600 border-green-500/20",
-    normal: "bg-yellow-500/10 text-yellow-600 border-yellow-500/20",
-    urgent: "bg-red-500/10 text-red-600 border-red-500/20",
+  const priorityStyles = {
+    low: "bg-emerald-500/10 text-emerald-700 border-emerald-500/20",
+    normal: "bg-amber-500/10 text-amber-700 border-amber-500/20",
+    urgent: "bg-rose-500/10 text-rose-700 border-rose-500/20",
   }
+
+  const priorityLabels = {
+    low: "Low",
+    normal: "Normal",
+    urgent: "Urgent",
+  }
+
+  const formatTimestamp = (value: string) =>
+    new Date(value).toLocaleString([], {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    })
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-2xl max-h-[90vh] flex flex-col p-0">
-        <DialogHeader className="px-6 pt-6 pb-4 pr-12 border-b">
-          <div className="space-y-3">
-            <div className="flex items-start justify-between gap-4">
-              {isEditing ? (
-                <Input
-                  value={editData.title}
-                  onChange={(e) => setEditData({ ...editData, title: e.target.value })}
-                  className="text-base font-medium"
-                />
-              ) : (
-                <DialogTitle className="text-lg font-semibold">{issue.title}</DialogTitle>
-              )}
-              <div className="flex items-center gap-2 shrink-0">
-                <Badge variant="outline" className={`${statusColors[issue.status]} text-xs`}>
-                  {issue.status.charAt(0).toUpperCase() + issue.status.slice(1)}
-                </Badge>
-                {isEditing ? (
-                  <Select
-                    value={editData.priority}
-                    onValueChange={(value) => setEditData({ ...editData, priority: value as "low" | "normal" | "urgent" })}
-                  >
-                    <SelectTrigger className="w-28 h-7 cursor-pointer">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem className="cursor-pointer" value="low">
-                        <span className="h-2 w-2 rounded-full" style={{ backgroundColor: "#a9a9a9ff" }} />
-                        Low</SelectItem>
-                      <SelectItem className="cursor-pointer" value="normal">
-                        <span className="h-2 w-2 rounded-full" style={{ backgroundColor: "#00a103ff" }} />
-                        Normal</SelectItem>
-                      <SelectItem className="cursor-pointer" value="urgent">
-                        <span className="h-2 w-2 rounded-full" style={{ backgroundColor: "#ff0019ff" }} />
-                        Urgent</SelectItem>
-                    </SelectContent>
-                  </Select>
-                ) : (
-                  issue.priority === "urgent" && (
-                    <Badge variant="outline" className={`${priorityColors[issue.priority]} text-xs`}>
-                      <AlertTriangle className="h-3 w-3 mr-1" />
-                      Urgent
-                    </Badge>
-                  )
-                )}
-              </div>
-            </div>
-            <DialogDescription className="flex items-center gap-3 text-xs">
-              <span className="flex items-center gap-1">
-                <Clock className="h-3 w-3" />
-                {new Date(issue.created_at).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' })}
-                {" • "}
-                {new Date(issue.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-              </span>
-              {issue.creator && (
-                <span className="flex items-center gap-1">
-                  <User className="h-3 w-3" />
-                  {issue.creator.full_name || issue.creator.email}
-                </span>
-              )}
-            </DialogDescription>
-          </div>
-        </DialogHeader>
-
-        <ScrollArea className="flex-1">
-          <div className="px-6 py-5 space-y-5">
-            {/* Description */}
-            <div className="space-y-2">
-              <Label className="text-xs font-medium text-muted-foreground">Description</Label>
-              {isEditing ? (
-                <Textarea
-                  value={editData.description}
-                  onChange={(e) => setEditData({ ...editData, description: e.target.value })}
-                  rows={6}
-                  className="text-sm"
-                />
-              ) : (
-                <p className="text-sm text-foreground/80 whitespace-pre-wrap leading-relaxed">{issue.description}</p>
-              )}
+      <DialogContent className="sm:max-w-5xl max-h-[92vh] flex flex-col p-0 overflow-hidden">
+        <div className="border-b bg-gradient-to-r from-primary/10 via-primary/5 to-transparent px-6 py-5">
+          <DialogHeader className="space-y-3 pr-12 text-left">
+            <div className="inline-flex w-fit items-center gap-2 rounded-full border bg-background/85 px-3 py-1 text-xs font-medium text-muted-foreground">
+              <Wrench className="h-3.5 w-3.5" />
+              Engineering Desk
             </div>
 
-            {issue.status === "resolved" && issue.resolver && (
-              <div className="flex items-center gap-2 p-3 bg-green-500/5 border border-green-500/20 rounded-md text-sm">
-                <CheckCircle2 className="h-4 w-4 text-green-600 shrink-0" />
-                <span className="text-foreground/80">
-                  Resolved by <span className="font-medium">{issue.resolver.full_name}</span> on {new Date(issue.resolved_at!).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' })}
-                </span>
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex min-w-0 items-center gap-3">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                  <AlertCircle className="h-4.5 w-4.5" />
+                </div>
+                <div className="min-w-0">
+                  <DialogTitle className="truncate text-base font-semibold tracking-tight">Issue workspace</DialogTitle>
+                  <DialogDescription className="text-xs text-muted-foreground">
+                    Review details, collaborate, and close the loop.
+                  </DialogDescription>
+                </div>
               </div>
-            )}
 
-            <Separator className="my-4" />
+              <Badge variant="outline" className={cn("text-xs", statusStyles[issue.status])}>
+                {issue.status.charAt(0).toUpperCase() + issue.status.slice(1)}
+              </Badge>
+            </div>
+          </DialogHeader>
+        </div>
 
-            {/* Comments Section */}
-            <div className="space-y-3">
-              <Label className="text-xs font-medium text-muted-foreground">
-                Comments ({comments.length})
-              </Label>
+        <div className="grid min-h-0 flex-1 md:grid-cols-[minmax(0,1fr)_300px]">
+          <ScrollArea className="min-h-0 border-b md:border-b-0 md:border-r">
+            <div className="space-y-5 p-6">
+              <section className="rounded-xl border bg-card p-4 sm:p-5">
+                <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Issue summary</p>
 
-              <div className="space-y-2.5">
-                {comments.map((comment) => (
-                  <div key={comment.id} className="p-3 bg-muted/30 rounded-md space-y-2">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center text-xs font-medium text-primary shrink-0">
-                          {comment.author?.full_name?.charAt(0).toUpperCase() || "U"}
-                        </div>
-                        <div className="flex items-center gap-2 text-xs">
-                          <span className="font-medium text-foreground">{comment.author?.full_name || "Unknown"}</span>
-                          <span className="text-muted-foreground">
-                            {new Date(comment.created_at).toLocaleDateString([], { month: 'short', day: 'numeric' })}
-                            {" • "}
-                            {new Date(comment.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-                          </span>
-                        </div>
-                      </div>
-                      {(comment.author_id === profile.id || profile.role === "admin") && (
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-6 w-6 cursor-pointer hover:bg-transparent hover:text-destructive"
-                          onClick={() => handleDeleteComment(comment.id)}
-                        >
-                          <X className="h-3 w-3" />
-                        </Button>
-                      )}
-                    </div>
-                    <p className="text-sm text-foreground/80 leading-relaxed pl-8">{comment.content}</p>
+                <div className="mt-3 flex flex-wrap items-start justify-between gap-3">
+                  <div className="min-w-0 flex-1">
+                    {isEditing ? (
+                      <Input
+                        value={editData.title}
+                        onChange={(e) => setEditData({ ...editData, title: e.target.value })}
+                        className="text-base font-medium"
+                      />
+                    ) : (
+                      <h2 className="truncate text-xl font-semibold tracking-tight">{issue.title}</h2>
+                    )}
                   </div>
-                ))}
 
-                {comments.length === 0 && (
-                  <p className="text-sm text-muted-foreground text-center py-6">No comments yet</p>
-                )}
-              </div>
+                  {!isEditing && (
+                    <Badge variant="outline" className={cn("text-xs", priorityStyles[issue.priority])}>
+                      {issue.priority === "urgent" && <AlertTriangle className="mr-1 h-3 w-3" />}
+                      {priorityLabels[issue.priority]}
+                    </Badge>
+                  )}
+                </div>
 
-              {/* Add Comment */}
-              <div className="flex gap-2 pt-1">
-                <Input
-                  placeholder="Add a comment..."
-                  value={newComment}
-                  onChange={(e) => setNewComment(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" && !e.shiftKey) {
-                      e.preventDefault()
-                      handleAddComment()
-                    }
-                  }}
-                  className="text-sm"
-                />
-                <Button className="cursor-pointer" size="icon" onClick={handleAddComment} disabled={loading || !newComment.trim()}>
-                  <Send className="h-4 w-4" />
-                </Button>
+                <div className="mt-4 grid gap-2 text-xs text-muted-foreground sm:grid-cols-3">
+                  <span className="flex items-center gap-1.5">
+                    <User className="h-3.5 w-3.5" />
+                    {issue.creator?.full_name || issue.creator?.email || "Unknown"}
+                  </span>
+                  <span className="flex items-center gap-1.5">
+                    <Clock className="h-3.5 w-3.5" />
+                    {formatTimestamp(issue.created_at)}
+                  </span>
+                  <span className="flex items-center gap-1.5">
+                    <MessageSquare className="h-3.5 w-3.5" />
+                    {comments.length} comments
+                  </span>
+                </div>
+              </section>
+
+              <section className="rounded-xl border bg-card p-4 sm:p-5">
+                <Label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Issue details</Label>
+                <div className="mt-3">
+                  {isEditing ? (
+                    <Textarea
+                      value={editData.description}
+                      onChange={(e) => setEditData({ ...editData, description: e.target.value })}
+                      rows={8}
+                      className="text-sm"
+                    />
+                  ) : (
+                    <p className="whitespace-pre-wrap text-sm leading-relaxed text-foreground/85">{issue.description}</p>
+                  )}
+                </div>
+              </section>
+
+              {issue.status === "resolved" && issue.resolver && (
+                <div className="flex items-center gap-2 rounded-lg border border-emerald-500/20 bg-emerald-500/5 px-4 py-3 text-sm">
+                  <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600" />
+                  <span className="text-foreground/80">
+                    Resolved by <span className="font-medium">{issue.resolver.full_name || issue.resolver.email}</span> on{" "}
+                    {issue.resolved_at ? formatTimestamp(issue.resolved_at) : "-"}
+                  </span>
+                </div>
+              )}
+
+              <section className="rounded-xl border bg-card p-4 sm:p-5">
+                <div className="flex items-center justify-between">
+                  <Label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Discussion</Label>
+                  <span className="text-xs text-muted-foreground">{comments.length} entries</span>
+                </div>
+
+                <div className="mt-3 space-y-2.5">
+                  {comments.map((comment) => (
+                    <article key={comment.id} className="space-y-2 rounded-lg border bg-muted/20 p-3.5">
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex min-w-0 items-center gap-2">
+                          <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
+                            {comment.author?.full_name?.charAt(0).toUpperCase() || "U"}
+                          </div>
+                          <div className="min-w-0 text-xs">
+                            <p className="truncate font-medium text-foreground">{comment.author?.full_name || "Unknown"}</p>
+                            <p className="text-muted-foreground">{formatTimestamp(comment.created_at)}</p>
+                          </div>
+                        </div>
+
+                        {(comment.author_id === profile.id || profile.role === "admin") && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-7 w-7 cursor-pointer text-muted-foreground hover:bg-transparent hover:text-destructive"
+                            onClick={() => handleDeleteComment(comment.id)}
+                          >
+                            <X className="h-3.5 w-3.5" />
+                          </Button>
+                        )}
+                      </div>
+
+                      <p className="pl-9 text-sm leading-relaxed text-foreground/80">{comment.content}</p>
+                    </article>
+                  ))}
+
+                  {comments.length === 0 && (
+                    <div className="rounded-lg border border-dashed bg-muted/10 px-4 py-6 text-center text-sm text-muted-foreground">
+                      No comments yet. Add context to help your team resolve this faster.
+                    </div>
+                  )}
+                </div>
+
+                <div className="mt-4 rounded-lg border bg-background p-3">
+                  <Label className="text-xs font-medium text-muted-foreground">Add comment</Label>
+                  <div className="mt-2 flex gap-2">
+                    <Input
+                      placeholder="Share an update or handover note..."
+                      value={newComment}
+                      onChange={(e) => setNewComment(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" && !e.shiftKey) {
+                          e.preventDefault()
+                          handleAddComment()
+                        }
+                      }}
+                      className="text-sm"
+                    />
+                    <Button
+                      className="cursor-pointer"
+                      size="icon"
+                      onClick={handleAddComment}
+                      disabled={loading || !newComment.trim()}
+                    >
+                      <Send className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              </section>
+            </div>
+          </ScrollArea>
+
+          <aside className="space-y-4 bg-muted/20 p-5">
+            <div className="rounded-lg border bg-card p-4">
+              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Status & priority</p>
+
+              <div className="mt-3 space-y-3">
+                <div>
+                  <p className="text-[11px] text-muted-foreground">Status</p>
+                  <Badge variant="outline" className={cn("mt-1 text-xs", statusStyles[issue.status])}>
+                    {issue.status.charAt(0).toUpperCase() + issue.status.slice(1)}
+                  </Badge>
+                </div>
+
+                <div>
+                  <p className="text-[11px] text-muted-foreground">Priority</p>
+                  {isEditing ? (
+                    <Select
+                      value={editData.priority}
+                      onValueChange={(value) => setEditData({ ...editData, priority: value as "low" | "normal" | "urgent" })}
+                    >
+                      <SelectTrigger className="mt-1 h-9 w-full cursor-pointer">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem className="cursor-pointer" value="low">
+                          <div className="flex items-center gap-2">
+                            <span className="h-2 w-2 rounded-full bg-emerald-500" />
+                            Low
+                          </div>
+                        </SelectItem>
+                        <SelectItem className="cursor-pointer" value="normal">
+                          <div className="flex items-center gap-2">
+                            <span className="h-2 w-2 rounded-full bg-amber-500" />
+                            Normal
+                          </div>
+                        </SelectItem>
+                        <SelectItem className="cursor-pointer" value="urgent">
+                          <div className="flex items-center gap-2">
+                            <span className="h-2 w-2 rounded-full bg-rose-500" />
+                            Urgent
+                          </div>
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  ) : (
+                    <Badge variant="outline" className={cn("mt-1 text-xs", priorityStyles[issue.priority])}>
+                      {priorityLabels[issue.priority]}
+                    </Badge>
+                  )}
+                </div>
               </div>
             </div>
-          </div>
-        </ScrollArea>
 
-        {/* Actions */}
-        <div className="flex items-center justify-between px-6 py-4 border-t bg-muted/20">
-          <div className="flex gap-2">
-            {isEditing ? (
-              <>
-                <Button className="cursor-pointer" variant="outline" size="sm" onClick={() => setIsEditing(false)}>
-                  Cancel
-                </Button>
-                <Button className="cursor-pointer" size="sm" onClick={handleUpdate} disabled={loading}>
-                  {loading ? "Saving..." : "Save Changes"}
-                </Button>
-              </>
-            ) : (
-              <>
-                <Button className="cursor-pointer" variant="ghost" size="sm" onClick={() => setIsEditing(true)}>
-                  <Edit2 className="h-3.5 w-3.5 mr-2" />
-                  Edit
-                </Button>
-                {profile.role === "admin" && (
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive cursor-pointer">
-                        <Trash2 className="h-3.5 w-3.5 mr-2" />
-                        Delete
+            <div className="rounded-lg border bg-card p-4">
+              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Actions</p>
+
+              <div className="mt-3 space-y-2">
+                {isEditing ? (
+                  <>
+                    <Button className="w-full cursor-pointer" variant="outline" size="sm" onClick={() => setIsEditing(false)}>
+                      Cancel edits
+                    </Button>
+                    <Button className="w-full cursor-pointer" size="sm" onClick={handleUpdate} disabled={loading}>
+                      {loading ? "Saving..." : "Save Changes"}
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Button className="w-full cursor-pointer" variant="outline" size="sm" onClick={() => setIsEditing(true)}>
+                      <Edit2 className="mr-2 h-3.5 w-3.5" />
+                      Edit issue
+                    </Button>
+
+                    {issue.status === "open" ? (
+                      <Button onClick={handleResolve} size="sm" className="w-full cursor-pointer">
+                        <CheckCircle2 className="mr-2 h-4 w-4" />
+                        Mark as Resolved
                       </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>Delete Issue?</AlertDialogTitle>
-                        <AlertDialogDescription>
-                          This action cannot be undone. This will permanently delete the issue and all associated
-                          comments.
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel className="cursor-pointer">Cancel</AlertDialogCancel>
-                        <AlertDialogAction className="cursor-pointer" onClick={handleDelete}>Delete</AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
+                    ) : (
+                      <Button className="w-full cursor-pointer" variant="outline" size="sm" onClick={handleReopen}>
+                        Reopen Issue
+                      </Button>
+                    )}
+                  </>
                 )}
-              </>
-            )}
-          </div>
+              </div>
+            </div>
 
-          {!isEditing && (
-            <>
-              {issue.status === "open" ? (
-                <Button onClick={handleResolve} size="sm" className="cursor-pointer">
-                  <CheckCircle2 className="h-4 w-4 mr-2" />
-                  Mark as Resolved
-                </Button>
-              ) : (
-                <Button className="cursor-pointer" variant="outline" size="sm" onClick={handleReopen}>
-                  Reopen Issue
-                </Button>
-              )}
-            </>
-          )}
+            {profile.role === "admin" && !isEditing && (
+              <div className="rounded-lg border border-destructive/20 bg-destructive/5 p-4">
+                <p className="text-xs font-medium uppercase tracking-wide text-destructive">Admin zone</p>
+                <p className="mt-1 text-xs text-muted-foreground">Delete this issue and all associated comments permanently.</p>
+
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="destructive" size="sm" className="mt-3 w-full cursor-pointer">
+                      <Trash2 className="mr-2 h-3.5 w-3.5" />
+                      Delete issue
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Delete Issue?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        This action cannot be undone. This will permanently delete the issue and all associated
+                        comments.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel className="cursor-pointer">Cancel</AlertDialogCancel>
+                      <AlertDialogAction className="cursor-pointer" onClick={handleDelete}>Delete</AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </div>
+            )}
+          </aside>
         </div>
       </DialogContent>
     </Dialog>

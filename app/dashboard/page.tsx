@@ -1,26 +1,37 @@
 import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
 import Link from "next/link"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { 
-  ClipboardList, 
-  AlertTriangle, 
-  MessageSquareWarning, 
-  Bell, 
-  CheckCircle,
+import {
+  AlertTriangle,
   ArrowRight,
-  TrendingUp,
-  Calendar,
-  Users,
-  Sparkles,
-  LayoutDashboard
+  Bell,
+  BookOpen,
+  Briefcase,
+  Building2,
+  CalendarClock,
+  CalendarDays,
+  ClipboardList,
+  LayoutDashboard,
+  MessageSquareWarning,
+  type LucideIcon,
 } from "lucide-react"
-import { UrgentNotesCard } from "@/components/dashboard/urgent-notes-card"
-import { RecentNotificationsCard } from "@/components/dashboard/recent-notifications-card"
-import { OpenComplaintsCard } from "@/components/dashboard/open-complaints-card"
-import type { HandoverNote, Notification, Complaint } from "@/lib/types"
+
+interface DashboardMetric {
+  label: string
+  value: string
+  helper: string
+  href: string
+  icon: LucideIcon
+}
+
+interface QuickLink {
+  href: string
+  title: string
+  description: string
+  icon: LucideIcon
+}
 
 export default async function DashboardPage() {
   const supabase = await createClient()
@@ -86,176 +97,309 @@ export default async function DashboardPage() {
   // Stats
   const urgentCount = todayNotes?.filter((n) => n.priority === "urgent").length || 0
   const totalToday = todayNotes?.length || 0
+  const urgentNotes = (todayNotes || []).filter((note) => note.priority === "urgent").slice(0, 4)
+  const complaintQueue = openComplaints.slice(0, 4)
+  const unreadQueue = recentNotifications.filter((notification) => !notification.is_read).slice(0, 4)
+  const unreadUrgentNotifications = recentNotifications.filter(
+    (notification) => !notification.is_read && notification.priority === "urgent",
+  ).length
+  const criticalItems = urgentCount + urgentComplaints + unreadUrgentNotifications
+  const departmentName = profile.department?.name || "Not assigned"
+  const todayLabel = new Date().toLocaleDateString("en-US", {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  })
+
+  const metrics: DashboardMetric[] = [
+    {
+      label: "Today's notes",
+      value: `${totalToday}`,
+      helper: `${urgentCount} urgent`,
+      href: "/dashboard/notes",
+      icon: ClipboardList,
+    },
+    {
+      label: "Open complaints",
+      value: `${openComplaints.length}`,
+      helper: `${urgentComplaints} urgent`,
+      href: "/dashboard/complaints",
+      icon: MessageSquareWarning,
+    },
+    {
+      label: "Unread alerts",
+      value: `${unreadNotifications}`,
+      helper: `${recentNotifications.length} in last 7 days`,
+      href: "/dashboard/notifications",
+      icon: Bell,
+    },
+    {
+      label: "Department",
+      value: departmentName,
+      helper: "View your profile",
+      href: "/dashboard/profile",
+      icon: Building2,
+    },
+  ]
+
+  const quickLinks: QuickLink[] = [
+    {
+      href: "/dashboard/notes",
+      title: "Handover Notes",
+      description: "Capture and review shift updates",
+      icon: ClipboardList,
+    },
+    {
+      href: "/dashboard/notifications",
+      title: "Notifications",
+      description: "Track announcements and read status",
+      icon: Bell,
+    },
+    {
+      href: "/dashboard/complaints",
+      title: "Complaints",
+      description: "Resolve active guest complaints",
+      icon: MessageSquareWarning,
+    },
+    {
+      href: "/dashboard/calendar",
+      title: "Calendar View",
+      description: "Navigate notes by date",
+      icon: CalendarDays,
+    },
+    {
+      href: "/dashboard/schedule",
+      title: "Schedule",
+      description: "Review rota coverage",
+      icon: CalendarClock,
+    },
+    {
+      href: "/dashboard/tasks",
+      title: "Tasks",
+      description: "Check assignments and progress",
+      icon: Briefcase,
+    },
+    {
+      href: "/dashboard/resources",
+      title: "Resources",
+      description: "Open SOPs and team guides",
+      icon: BookOpen,
+    },
+  ]
 
   return (
-    <div className="p-6 space-y-6 mx-auto">
-      <div className="flex items-start justify-between">
-        <div className="flex items-center gap-3">
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary">
-            <LayoutDashboard className="h-6 w-6 text-primary-foreground" />
-          </div>
-          <div>
-            <div className="flex items-center gap-3 mb-1">
-              <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
-              <Badge variant="outline" className="hidden sm:flex items-center gap-1.5">
-                <Sparkles className="h-3.5 w-3.5" />
-                {profile.role}
-              </Badge>
-            </div>
-            <p className="text-muted-foreground text-sm">
-              {new Date().toLocaleDateString("en-US", {
-                weekday: "long",
-                year: "numeric",
-                month: "long",
-                day: "numeric",
-              })}
-            </p>
-          </div>
-        </div>
-      </div>
-
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Link href="/dashboard/notes">
-          <Card className="border-blue-500/20 bg-gradient-to-br from-blue-500/5 to-transparent hover:shadow-lg hover:scale-[1.02] transition-all cursor-pointer group">
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-3xl font-bold text-blue-600 group-hover:text-blue-700 transition-colors">{totalToday}</p>
-                  <p className="text-sm font-medium text-muted-foreground mt-1">Today's Notes</p>
-                  {urgentCount > 0 && (
-                    <Badge variant="destructive" className="mt-2 text-xs">
-                      {urgentCount} urgent
-                    </Badge>
-                  )}
-                </div>
-                <div className="p-3 rounded-xl bg-blue-500/10 group-hover:bg-blue-500/20 transition-colors">
-                  <ClipboardList className="h-6 w-6 text-blue-500" />
-                </div>
+    <div className="min-h-full bg-background p-4 sm:p-6 lg:p-8">
+      <div className="space-y-6">
+        <Card className="border-border/70 bg-gradient-to-r from-primary/10 via-background to-background">
+          <CardContent className="flex flex-col gap-6 p-6 lg:flex-row lg:items-center lg:justify-between">
+            <div className="flex items-start gap-4">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
+                <LayoutDashboard className="h-6 w-6 text-primary" />
               </div>
-            </CardContent>
-          </Card>
-        </Link>
-
-        <Link href="/dashboard/complaints">
-          <Card className="border-orange-500/20 bg-gradient-to-br from-orange-500/5 to-transparent hover:shadow-lg hover:scale-[1.02] transition-all cursor-pointer group">
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-3xl font-bold text-orange-600 group-hover:text-orange-700 transition-colors">{openComplaints.length}</p>
-                  <p className="text-sm font-medium text-muted-foreground mt-1">Open Complaints</p>
-                  {urgentComplaints > 0 && (
-                    <Badge variant="destructive" className="mt-2 text-xs">
-                      {urgentComplaints} urgent
-                    </Badge>
-                  )}
-                </div>
-                <div className="p-3 rounded-xl bg-orange-500/10 group-hover:bg-orange-500/20 transition-colors">
-                  <MessageSquareWarning className="h-6 w-6 text-orange-500" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </Link>
-
-        <Link href="/dashboard/notifications">
-          <Card className="border-purple-500/20 bg-gradient-to-br from-purple-500/5 to-transparent hover:shadow-lg hover:scale-[1.02] transition-all cursor-pointer group">
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-3xl font-bold text-purple-600 group-hover:text-purple-700 transition-colors">{unreadNotifications}</p>
-                  <p className="text-sm font-medium text-muted-foreground mt-1">Unread Alerts</p>
-                  <p className="text-xs text-muted-foreground mt-2">
-                    {recentNotifications.length} in last 7 days
-                  </p>
-                </div>
-                <div className="p-3 rounded-xl bg-purple-500/10 group-hover:bg-purple-500/20 transition-colors">
-                  <Bell className="h-6 w-6 text-purple-500" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </Link>
-
-        <Card className="border-emerald-500/20 bg-gradient-to-br from-emerald-500/5 to-transparent">
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div className="flex-1 min-w-0">
-                <p className="text-xl font-bold text-emerald-600 truncate">
-                  {profile.department?.name || "Not assigned"}
+              <div className="space-y-2">
+                <h1 className="text-2xl font-semibold tracking-tight">Dashboard</h1>
+                <p className="max-w-2xl text-sm text-muted-foreground">
+                  A focused shift overview with today&apos;s priorities, active queues, and direct access to the tools your team uses most.
                 </p>
-                <p className="text-sm font-medium text-muted-foreground mt-1">Your Department</p>
+                <div className="flex flex-wrap items-center gap-2">
+                  <Badge variant="outline" className="capitalize">
+                    {profile.role}
+                  </Badge>
+                  <Badge variant="secondary" className="font-normal">
+                    {departmentName}
+                  </Badge>
+                </div>
               </div>
-              <div className="p-3 rounded-xl bg-emerald-500/10 shrink-0">
-                <Users className="h-6 w-6 text-emerald-500" />
-              </div>
+            </div>
+
+            <div className="rounded-xl border border-border bg-card px-4 py-3">
+              <p className="text-xs uppercase tracking-wide text-muted-foreground">Today</p>
+              <p className="mt-1 text-sm font-medium">{todayLabel}</p>
+              <p className="mt-2 text-sm text-muted-foreground">
+                {criticalItems > 0
+                  ? `${criticalItems} critical items need attention`
+                  : "No critical items. Team is on track."}
+              </p>
             </div>
           </CardContent>
         </Card>
-      </div>
 
-      <div className="grid gap-6 lg:grid-cols-3">
-        <UrgentNotesCard notes={(todayNotes || []) as HandoverNote[]} />
-        <RecentNotificationsCard notifications={recentNotifications as Notification[]} />
-        <OpenComplaintsCard complaints={(complaints || []) as Complaint[]} />
-      </div>
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          {metrics.map((metric) => (
+            <Link key={metric.label} href={metric.href} className="group">
+              <Card className="h-full border-border/80 transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-sm">
+                <CardContent className="flex h-full flex-col justify-between gap-4 p-5">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <p className="text-sm text-muted-foreground">{metric.label}</p>
+                      <p className="mt-1 line-clamp-1 text-2xl font-semibold tracking-tight">{metric.value}</p>
+                    </div>
+                    <div className="rounded-lg bg-primary/10 p-2 text-primary">
+                      <metric.icon className="h-4 w-4" />
+                    </div>
+                  </div>
 
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        <Link href="/dashboard/calendar">
-          <Card className="hover:border-primary/50 hover:shadow-lg hover:scale-[1.02] transition-all cursor-pointer group">
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="p-2.5 rounded-lg bg-primary/10 group-hover:bg-primary/20 transition-colors">
-                    <Calendar className="h-5 w-5 text-primary" />
+                  <div className="flex items-center justify-between text-sm text-muted-foreground">
+                    <span>{metric.helper}</span>
+                    <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5 group-hover:text-primary" />
                   </div>
-                  <div>
-                    <p className="font-semibold group-hover:text-primary transition-colors">Calendar View</p>
-                    <p className="text-sm text-muted-foreground">View notes by date</p>
-                  </div>
+                </CardContent>
+              </Card>
+            </Link>
+          ))}
+        </div>
+
+        <div className="grid gap-6 xl:grid-cols-[1.6fr_1fr]">
+          <Card className="border-border/80">
+            <CardHeader>
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div>
+                  <CardTitle>Operational Queue</CardTitle>
+                  <CardDescription>Priority items to review at the start of your shift.</CardDescription>
                 </div>
-                <ArrowRight className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
+                <Badge variant={criticalItems > 0 ? "destructive" : "secondary"}>
+                  {criticalItems > 0 ? `${criticalItems} critical` : "Stable"}
+                </Badge>
               </div>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <section className="space-y-3">
+                <div className="flex items-center gap-2 text-sm font-medium">
+                  <AlertTriangle className="h-4 w-4 text-destructive" />
+                  Urgent Notes
+                </div>
+                {urgentNotes.length === 0 ? (
+                  <p className="rounded-lg border border-dashed px-3 py-2 text-sm text-muted-foreground">No urgent notes logged for today.</p>
+                ) : (
+                  <div className="space-y-2">
+                    {urgentNotes.map((note) => (
+                      <div key={note.id} className="rounded-lg border px-3 py-2">
+                        <p className="text-sm font-medium">{note.title}</p>
+                        <p className="mt-1 text-xs text-muted-foreground line-clamp-2">{note.content}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                <Link href="/dashboard/notes" className="inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline">
+                  Open notes
+                  <ArrowRight className="h-3.5 w-3.5" />
+                </Link>
+              </section>
+
+              <section className="space-y-3">
+                <div className="flex items-center gap-2 text-sm font-medium">
+                  <MessageSquareWarning className="h-4 w-4 text-primary" />
+                  Open Complaints
+                </div>
+                {complaintQueue.length === 0 ? (
+                  <p className="rounded-lg border border-dashed px-3 py-2 text-sm text-muted-foreground">No open complaints at this time.</p>
+                ) : (
+                  <div className="space-y-2">
+                    {complaintQueue.map((complaint) => (
+                      <div key={complaint.id} className="rounded-lg border px-3 py-2">
+                        <div className="flex items-start justify-between gap-2">
+                          <p className="text-sm font-medium line-clamp-1">{complaint.title}</p>
+                          {complaint.priority === "urgent" && (
+                            <Badge variant="destructive" className="h-5 px-1.5 text-[10px] uppercase">
+                              Urgent
+                            </Badge>
+                          )}
+                        </div>
+                        <p className="mt-1 text-xs text-muted-foreground line-clamp-2">{complaint.description}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                <Link href="/dashboard/complaints" className="inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline">
+                  Open complaints
+                  <ArrowRight className="h-3.5 w-3.5" />
+                </Link>
+              </section>
+
+              <section className="space-y-3">
+                <div className="flex items-center gap-2 text-sm font-medium">
+                  <Bell className="h-4 w-4 text-primary" />
+                  Unread Notifications
+                </div>
+                {unreadQueue.length === 0 ? (
+                  <p className="rounded-lg border border-dashed px-3 py-2 text-sm text-muted-foreground">You are all caught up.</p>
+                ) : (
+                  <div className="space-y-2">
+                    {unreadQueue.map((notification) => (
+                      <div key={notification.id} className="rounded-lg border px-3 py-2">
+                        <div className="flex items-start justify-between gap-2">
+                          <p className="text-sm font-medium line-clamp-1">{notification.title}</p>
+                          {notification.priority === "urgent" && (
+                            <Badge variant="destructive" className="h-5 px-1.5 text-[10px] uppercase">
+                              Urgent
+                            </Badge>
+                          )}
+                        </div>
+                        <p className="mt-1 text-xs text-muted-foreground line-clamp-2">{notification.content}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                <Link href="/dashboard/notifications" className="inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline">
+                  Open notifications
+                  <ArrowRight className="h-3.5 w-3.5" />
+                </Link>
+              </section>
             </CardContent>
           </Card>
-        </Link>
 
-        <Link href="/dashboard/schedule">
-          <Card className="hover:border-primary/50 hover:shadow-lg hover:scale-[1.02] transition-all cursor-pointer group">
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="p-2.5 rounded-lg bg-primary/10 group-hover:bg-primary/20 transition-colors">
-                    <Users className="h-5 w-5 text-primary" />
-                  </div>
-                  <div>
-                    <p className="font-semibold group-hover:text-primary transition-colors">Team Schedule</p>
-                    <p className="text-sm text-muted-foreground">View staff rotas</p>
-                  </div>
-                </div>
-                <ArrowRight className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
-              </div>
-            </CardContent>
-          </Card>
-        </Link>
+          <div className="space-y-6">
+            <Card className="border-border/80">
+              <CardHeader>
+                <CardTitle>Quick Actions</CardTitle>
+                <CardDescription>Jump straight into your daily workflows.</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                {quickLinks.map((link) => (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    className="group flex items-center gap-3 rounded-lg border px-3 py-2 transition-colors hover:border-primary/40 hover:bg-primary/5"
+                  >
+                    <div className="rounded-md bg-primary/10 p-2 text-primary">
+                      <link.icon className="h-4 w-4" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-medium line-clamp-1">{link.title}</p>
+                      <p className="text-xs text-muted-foreground line-clamp-1">{link.description}</p>
+                    </div>
+                    <ArrowRight className="h-4 w-4 text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:text-primary" />
+                  </Link>
+                ))}
+              </CardContent>
+            </Card>
 
-        <Link href="/dashboard/resources">
-          <Card className="hover:border-primary/50 hover:shadow-lg hover:scale-[1.02] transition-all cursor-pointer group">
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="p-2.5 rounded-lg bg-primary/10 group-hover:bg-primary/20 transition-colors">
-                    <TrendingUp className="h-5 w-5 text-primary" />
-                  </div>
-                  <div>
-                    <p className="font-semibold group-hover:text-primary transition-colors">Resources</p>
-                    <p className="text-sm text-muted-foreground">Browse guides & docs</p>
-                  </div>
+            <Card className="border-border/80 bg-muted/20">
+              <CardHeader>
+                <CardTitle>Shift Snapshot</CardTitle>
+                <CardDescription>A concise readout of current workload.</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3 text-sm">
+                <div className="flex items-center justify-between rounded-lg border bg-background px-3 py-2">
+                  <span className="text-muted-foreground">Notes created today</span>
+                  <span className="font-medium">{totalToday}</span>
                 </div>
-                <ArrowRight className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
-              </div>
-            </CardContent>
-          </Card>
-        </Link>
+                <div className="flex items-center justify-between rounded-lg border bg-background px-3 py-2">
+                  <span className="text-muted-foreground">Open complaints</span>
+                  <span className="font-medium">{openComplaints.length}</span>
+                </div>
+                <div className="flex items-center justify-between rounded-lg border bg-background px-3 py-2">
+                  <span className="text-muted-foreground">Unread notifications</span>
+                  <span className="font-medium">{unreadNotifications}</span>
+                </div>
+                <div className="rounded-lg border border-dashed bg-background px-3 py-2 text-xs text-muted-foreground">
+                  Keep this queue clear before handover to maintain service continuity.
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
       </div>
     </div>
   )

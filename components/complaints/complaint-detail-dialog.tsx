@@ -8,7 +8,6 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Badge } from "@/components/ui/badge"
-import { Separator } from "@/components/ui/separator"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import {
@@ -22,7 +21,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
-import { CheckCircle2, Trash2, Send, User, Clock, Edit2, X } from "lucide-react"
+import { CheckCircle2, Trash2, Send, User, Clock, Edit2, X, MessageSquarePlus } from "lucide-react"
 import { toast } from "sonner"
 import type { Complaint, ComplaintComment, Profile, ComplaintTag } from "@/lib/types"
 
@@ -231,56 +230,43 @@ export function ComplaintDetailDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-2xl max-h-[90vh] flex flex-col p-0">
-        <DialogHeader className="px-6 pt-6 pb-4 pr-12 border-b">
-          <div className="space-y-3">
+      <DialogContent className="sm:max-w-5xl max-h-[92vh] flex flex-col overflow-hidden p-0 gap-0">
+        <div className="border-b bg-gradient-to-r from-primary/10 via-primary/5 to-transparent px-6 py-5">
+          <DialogHeader className="space-y-3 pr-12 text-left">
+            <div className="inline-flex w-fit items-center gap-2 rounded-full border bg-background/85 px-3 py-1 text-xs font-medium text-muted-foreground">
+              <MessageSquarePlus className="h-3.5 w-3.5" />
+              Guest Care
+            </div>
+
             <div className="flex items-start justify-between gap-4">
-              {isEditing ? (
-                <Input
-                  value={editData.title}
-                  onChange={(e) => setEditData({ ...editData, title: e.target.value })}
-                  className="text-base font-medium"
-                />
-              ) : (
-                <DialogTitle className="text-lg font-semibold">{complaint.title}</DialogTitle>
-              )}
+              <div className="min-w-0 flex-1">
+                {isEditing ? (
+                  <Input
+                    value={editData.title}
+                    onChange={(e) => setEditData({ ...editData, title: e.target.value })}
+                    className="h-10 bg-background text-base font-semibold"
+                  />
+                ) : (
+                  <DialogTitle className="text-xl tracking-tight">{complaint.title}</DialogTitle>
+                )}
+              </div>
+
               <div className="flex items-center gap-2 shrink-0">
                 <Badge variant={complaint.status === "open" ? "default" : "secondary"} className="text-xs">
                   {complaint.status.charAt(0).toUpperCase() + complaint.status.slice(1)}
                 </Badge>
-                {isEditing ? (
-                  <Select
-                    value={editData.priority}
-                    onValueChange={(value) => setEditData({ ...editData, priority: value as any })}
-                  >
-                    <SelectTrigger className="w-32 h-7 cursor-pointer">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem className="cursor-pointer" value="low">
-                        <span className="h-2 w-2 rounded-full" style={{ backgroundColor: "#a9a9a9ff" }} />
-                        Low</SelectItem>
-                      <SelectItem className="cursor-pointer" value="normal">
-                        <span className="h-2 w-2 rounded-full" style={{ backgroundColor: "#00a103ff" }} />
-                        Normal</SelectItem>
-                      <SelectItem className="cursor-pointer" value="urgent">
-                        <span className="h-2 w-2 rounded-full" style={{ backgroundColor: "#ff0019ff" }} />
-                        Urgent</SelectItem>
-                    </SelectContent>
-                  </Select>
-                ) : (
-                  complaint.priority === "urgent" && (
-                    <Badge variant="outline" className={`${priorityColors[complaint.priority]} text-xs`}>
-                      Urgent
-                    </Badge>
-                  )
+                {!isEditing && (
+                  <Badge variant="outline" className={`${priorityColors[complaint.priority]} text-xs font-medium`}>
+                    {complaint.priority.charAt(0).toUpperCase() + complaint.priority.slice(1)}
+                  </Badge>
                 )}
               </div>
             </div>
-            <DialogDescription className="flex items-center gap-3 text-xs">
+
+            <DialogDescription className="flex flex-wrap items-center gap-3 text-xs">
               <span className="flex items-center gap-1">
                 <Clock className="h-3 w-3" />
-                {new Date(complaint.created_at).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' })}
+                {new Date(complaint.created_at).toLocaleDateString([], { month: "short", day: "numeric", year: "numeric" })}
                 {" • "}
                 {new Date(complaint.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
               </span>
@@ -291,202 +277,300 @@ export function ComplaintDetailDialog({
                 </span>
               )}
             </DialogDescription>
-          </div>
-        </DialogHeader>
+          </DialogHeader>
+        </div>
 
-        <ScrollArea className="flex-1">
-          <div className="px-6 py-5 space-y-5">
-            {/* Guest Info */}
-            {(complaint.guest_name || complaint.room_number) && (
-              <div className="flex items-center gap-2 text-sm">
-                <User className="h-4 w-4 text-muted-foreground" />
-                {complaint.guest_name && <span className="font-medium">{complaint.guest_name}</span>}
-                {complaint.room_number && (
-                  <span className="text-muted-foreground">
-                    {complaint.guest_name && "•"} Room {complaint.room_number}
-                  </span>
-                )}
-              </div>
-            )}
+        <ScrollArea className="flex-1 min-h-0 overflow-y-auto">
+          <div className="px-6 py-5">
+            {isEditing ? (
+              <div className="rounded-xl border bg-card p-5">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="col-span-2 space-y-1.5">
+                    <Label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Description</Label>
+                    <Textarea
+                      value={editData.description}
+                      onChange={(e) => setEditData({ ...editData, description: e.target.value })}
+                      rows={5}
+                      className="text-sm resize-none"
+                    />
+                  </div>
 
-            {/* Description */}
-            <div className="space-y-2">
-              <Label className="text-xs font-medium text-muted-foreground">Description</Label>
-              {isEditing ? (
-                <Textarea
-                  value={editData.description}
-                  onChange={(e) => setEditData({ ...editData, description: e.target.value })}
-                  rows={4}
-                  className="text-sm"
-                />
-              ) : (
-                <p className="text-sm text-foreground/80 whitespace-pre-wrap leading-relaxed">{complaint.description}</p>
-              )}
-            </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Assigned To</Label>
+                    <Select
+                      value={editData.assigned_to}
+                      onValueChange={(value) => setEditData({ ...editData, assigned_to: value })}
+                    >
+                      <SelectTrigger className="text-sm w-full cursor-pointer">
+                        <SelectValue placeholder="Select staff member" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {staffMembers.map((staff) => (
+                          <SelectItem className="cursor-pointer" key={staff.id} value={staff.id}>
+                            {staff.full_name || staff.email}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
 
-            {/* Assignment */}
-            {isEditing && (
-              <div className="space-y-2">
-                <Label className="text-xs font-medium text-muted-foreground">Assigned To</Label>
-                <Select
-                  value={editData.assigned_to}
-                  onValueChange={(value) => setEditData({ ...editData, assigned_to: value })}
-                >
-                  <SelectTrigger className="text-sm w-full cursor-pointer">
-                    <SelectValue placeholder="Assign to staff member" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {staffMembers.map((staff) => (
-                      <SelectItem className="cursor-pointer" key={staff.id} value={staff.id}>
-                        {staff.full_name || staff.email}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            )}
+                  <div className="space-y-1.5">
+                    <Label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Priority</Label>
+                    <Select
+                      value={editData.priority}
+                      onValueChange={(value) => setEditData({ ...editData, priority: value as any })}
+                    >
+                      <SelectTrigger className="text-sm w-full cursor-pointer">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem className="cursor-pointer" value="low">Low</SelectItem>
+                        <SelectItem className="cursor-pointer" value="normal">Normal</SelectItem>
+                        <SelectItem className="cursor-pointer" value="urgent">Urgent</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
 
-            {complaint.assignee && !isEditing && (
-              <div className="flex items-center gap-2 text-sm">
-                <span className="text-muted-foreground">Assigned to:</span>
-                <span className="font-medium">{complaint.assignee.full_name || complaint.assignee.email}</span>
-              </div>
-            )}
-
-            {/* Tags Section */}
-            <div className="space-y-2">
-              <Label className="text-xs font-medium text-muted-foreground">Tags</Label>
-              {isEditing ? (
-                <div className="flex flex-wrap gap-2 p-2.5 border rounded-md min-h-[42px]">
-                  {availableTags.map((tag) => {
-                    const isSelected = selectedTags.includes(tag.id)
-                    return (
-                      <button
-                        key={tag.id}
-                        type="button"
-                        onClick={() => {
-                          setSelectedTags(
-                            isSelected
-                              ? selectedTags.filter((id) => id !== tag.id)
-                              : [...selectedTags, tag.id]
-                          )
-                        }}
-                        className={`px-2.5 py-1 rounded text-xs font-medium transition-all cursor-pointer ${isSelected
-                            ? "opacity-100"
-                            : "opacity-50 hover:opacity-100"
-                          }`}
-                        style={{
-                          backgroundColor: isSelected ? tag.color + "15" : tag.color + "08",
-                          borderColor: tag.color + (isSelected ? "50" : "30"),
-                          color: tag.color,
-                          borderWidth: "1px",
-                          borderStyle: "solid"
-                        }}
-                      >
-                        {tag.name}
-                      </button>
-                    )
-                  })}
+                  <div className="col-span-2 space-y-1.5">
+                    <Label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Tags</Label>
+                    <div className="flex flex-wrap gap-2 p-3 border rounded-lg bg-white min-h-[44px]">
+                      {availableTags.map((tag) => {
+                        const isSelected = selectedTags.includes(tag.id)
+                        return (
+                          <button
+                            key={tag.id}
+                            type="button"
+                            onClick={() => {
+                              setSelectedTags(
+                                isSelected
+                                  ? selectedTags.filter((id) => id !== tag.id)
+                                  : [...selectedTags, tag.id]
+                              )
+                            }}
+                            className={`px-3 py-1 rounded-full text-xs font-medium transition-all cursor-pointer border ${isSelected
+                                ? "opacity-100 scale-105"
+                                : "opacity-55 hover:opacity-70"
+                              }`}
+                            style={{
+                              backgroundColor: isSelected ? tag.color + "18" : "transparent",
+                              borderColor: tag.color + (isSelected ? "60" : "80"),
+                              color: tag.color,
+                            }}
+                          >
+                            {tag.name}
+                          </button>
+                        )
+                      })}
+                    </div>
+                  </div>
                 </div>
-              ) : (
-                <div className="flex flex-wrap gap-2">
-                  {complaint.tags && complaint.tags.length > 0 ? (
-                    complaint.tags.map((tag) => (
-                      <Badge
-                        key={tag.id}
-                        variant="outline"
-                        className="font-normal text-xs"
-                        style={{ borderColor: tag.color, color: tag.color }}
-                      >
-                        {tag.name}
-                      </Badge>
-                    ))
-                  ) : (
-                    <p className="text-xs text-muted-foreground">No tags</p>
-                  )}
-                </div>
-              )}
-            </div>
-
-            {complaint.status === "resolved" && complaint.resolver && (
-              <div className="flex items-center gap-2 p-3 bg-green-500/5 border border-green-500/20 rounded-md text-sm">
-                <CheckCircle2 className="h-4 w-4 text-green-600 shrink-0" />
-                <span className="text-foreground/80">
-                  Resolved by <span className="font-medium">{complaint.resolver.full_name}</span> on {new Date(complaint.resolved_at!).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' })}
-                </span>
               </div>
-            )}
+            ) : (
+              <div className="rounded-xl border bg-card p-4 sm:p-5">
+                <div className="relative">
+                {/* Center vertical timeline line */}
+                <div className="absolute left-1/2 -translate-x-[0.5px] top-4 bottom-0 w-px bg-border" />
 
-            <Separator className="my-4" />
-
-            {/* Comments Section */}
-            <div className="space-y-3">
-              <Label className="text-xs font-medium text-muted-foreground">
-                Comments ({comments.length})
-              </Label>
-
-              <div className="space-y-2.5">
-                {comments.map((comment) => (
-                  <div key={comment.id} className="p-3 bg-muted/30 rounded-md space-y-2">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center text-xs font-medium text-primary shrink-0">
-                          {comment.author?.full_name?.charAt(0).toUpperCase() || "U"}
+                {/* ── Complaint Opened ── left side */}
+                <div className="grid grid-cols-[1fr_35px_1fr] pb-8">
+                  <div className="flex flex-col items-end pr-3">
+                    <div className="flex items-center gap-2 mb-1.5 flex-wrap justify-end">
+                      <span className="text-[11px] text-muted-foreground">
+                        {new Date(complaint.created_at).toLocaleDateString([], { month: "short", day: "numeric" })}
+                        {" "}
+                        {new Date(complaint.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                      </span>
+                      <span className="text-xs text-muted-foreground">•</span>
+                      <span className="text-sm font-semibold">
+                        {complaint.creator?.full_name || complaint.creator?.email || "Unknown"}
+                      </span>
+                    </div>
+                    <div className="p-3.5 border rounded-xl rounded-tr-sm bg-muted/20 space-y-2.5 w-full text-left">
+                      {(complaint.guest_name || complaint.room_number) && (
+                        <div className="flex items-center gap-2 text-sm">
+                          <User className="h-3.5 w-3.5 text-muted-foreground" />
+                          {complaint.guest_name && <span className="font-medium">{complaint.guest_name}</span>}
+                          {complaint.room_number && (
+                            <span className="text-muted-foreground">
+                              {complaint.guest_name && "•"} Room {complaint.room_number}
+                            </span>
+                          )}
                         </div>
-                        <div className="flex items-center gap-2 text-xs">
-                          <span className="font-medium text-foreground">{comment.author?.full_name || "Unknown"}</span>
-                          <span className="text-muted-foreground">
-                            {new Date(comment.created_at).toLocaleDateString([], { month: 'short', day: 'numeric' })}
-                            {" • "}
-                            {new Date(comment.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-                          </span>
+                      )}
+                      <p className="text-sm text-foreground/80 whitespace-pre-wrap leading-relaxed">{complaint.description}</p>
+                      {complaint.tags && complaint.tags.length > 0 && (
+                        <div className="flex flex-wrap gap-1.5">
+                          {complaint.tags.map((tag) => (
+                            <Badge
+                              key={tag.id}
+                              variant="outline"
+                              className="font-normal text-xs"
+                              style={{ borderColor: tag.color, color: tag.color }}
+                            >
+                              {tag.name}
+                            </Badge>
+                          ))}
                         </div>
-                      </div>
-                      {(comment.author_id === profile.id || profile.role === "admin") && (
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-6 w-6 cursor-pointer hover:bg-transparent hover:text-destructive"
-                          onClick={() => handleDeleteComment(comment.id)}
-                        >
-                          <X className="h-3 w-3" />
-                        </Button>
+                      )}
+                      {complaint.assignee && (
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground pt-2 border-t">
+                          <span>Assigned to <span className="font-medium text-foreground">{complaint.assignee.full_name || complaint.assignee.email}</span></span>
+                        </div>
                       )}
                     </div>
-                    <p className="text-sm text-foreground/80 leading-relaxed pl-8">{comment.content}</p>
                   </div>
-                ))}
+                  <div className="flex justify-center">
+                    <div className="relative z-10 h-[35px] w-[35px] rounded-full bg-primary flex items-center justify-center">
+                      <User className="h-3.5 w-3.5 text-primary-foreground" />
+                    </div>
+                  </div>
+                  <div />
+                </div>
 
-                {comments.length === 0 && (
-                  <p className="text-sm text-muted-foreground text-center py-6">No comments yet</p>
+                {/* ── Comment timeline entries ── */}
+                {comments.map((comment) => {
+                  const isOwnComment = comment.author_id === profile.id
+                  return (
+                    <div key={comment.id} className="grid grid-cols-[1fr_35px_1fr] pb-6 group">
+                      {/* Left column — content if NOT own comment */}
+                      {!isOwnComment ? (
+                        <div className="flex flex-col items-end pr-3">
+                          <div className="flex items-center gap-2 mb-1 flex-wrap justify-end">
+                            <span className="text-[11px] text-muted-foreground">
+                              {new Date(comment.created_at).toLocaleDateString([], { month: "short", day: "numeric" })}
+                              {" "}
+                              {new Date(comment.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                            </span>
+                            <span className="text-xs font-medium">
+                              {comment.author?.full_name || "Unknown"}
+                            </span>
+                            {(comment.author_id === profile.id || profile.role === "admin") && (
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-5 w-5 cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive hover:bg-transparent"
+                                onClick={() => handleDeleteComment(comment.id)}
+                              >
+                                <X className="h-3 w-3" />
+                              </Button>
+                            )}
+                          </div>
+                          <div className="p-3 text-sm leading-relaxed whitespace-pre-wrap bg-muted/60 border rounded-2xl rounded-tr-sm text-left w-full">
+                            {comment.content}
+                          </div>
+                        </div>
+                      ) : <div />}
+
+                      {/* Center dot */}
+                      <div className="flex justify-center">
+                        <div className={`relative z-10 h-[35px] w-[35px] rounded-full flex items-center justify-center text-xs font-semibold ${
+                          isOwnComment
+                            ? "bg-primary text-primary-foreground"
+                            : "bg-muted text-muted-foreground"
+                        }`}>
+                          {comment.author?.full_name?.charAt(0).toUpperCase() || "U"}
+                        </div>
+                      </div>
+
+                      {/* Right column — content if own comment */}
+                      {isOwnComment ? (
+                        <div className="flex flex-col items-start pl-3">
+                          <div className="flex items-center gap-2 mb-1 flex-wrap">
+                            <span className="text-xs font-medium">
+                              {comment.author?.full_name || "Unknown"}
+                            </span>
+                            <span className="text-[11px] text-muted-foreground">
+                              {new Date(comment.created_at).toLocaleDateString([], { month: "short", day: "numeric" })}
+                              {" "}
+                              {new Date(comment.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                            </span>
+                            {(comment.author_id === profile.id || profile.role === "admin") && (
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-5 w-5 cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive hover:bg-transparent"
+                                onClick={() => handleDeleteComment(comment.id)}
+                              >
+                                <X className="h-3 w-3" />
+                              </Button>
+                            )}
+                          </div>
+                          <div className="p-3 text-sm leading-relaxed whitespace-pre-wrap bg-primary text-primary-foreground rounded-2xl rounded-tl-sm w-full">
+                            {comment.content}
+                          </div>
+                        </div>
+                      ) : <div />}
+                    </div>
+                  )
+                })}
+
+                {/* ── Resolved Event ── center point */}
+                {complaint.status === "resolved" && complaint.resolver && (
+                  <div className="grid grid-cols-[1fr_35px_1fr] pb-2">
+                    <div className="flex items-center justify-end pr-3">
+                      <span className="text-xs text-muted-foreground">
+                        {new Date(complaint.resolved_at!).toLocaleDateString([], { month: "short", day: "numeric", year: "numeric" })}
+                      </span>
+                    </div>
+                    <div className="flex justify-center">
+                      <div className="relative z-10 h-[35px] w-[35px] rounded-full bg-green-500/15 flex items-center justify-center">
+                        <CheckCircle2 className="h-4 w-4 text-green-600" />
+                      </div>
+                    </div>
+                    <div className="flex items-center pl-3">
+                      <span className="text-sm font-medium text-green-600">
+                        Resolved by {complaint.resolver.full_name}
+                      </span>
+                    </div>
+                  </div>
                 )}
-              </div>
 
-              {/* Add Comment */}
-              <div className="flex gap-2 pt-1">
-                <Input
-                  placeholder="Add a comment..."
-                  value={newComment}
-                  onChange={(e) => setNewComment(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" && !e.shiftKey) {
-                      e.preventDefault()
-                      handleAddComment()
-                    }
-                  }}
-                  className="text-sm"
-                />
-                <Button className="cursor-pointer" size="icon" onClick={handleAddComment} disabled={loading || !newComment.trim()}>
-                  <Send className="h-4 w-4" />
-                </Button>
+                {/* ── Empty state ── center point */}
+                {comments.length === 0 && complaint.status !== "resolved" && (
+                  <div className="grid grid-cols-[1fr_35px_1fr] pb-2">
+                    <div />
+                    <div className="flex justify-center">
+                      <div className="relative z-10 h-[35px] w-[35px] rounded-full bg-muted/60 flex items-center justify-center">
+                        <Clock className="h-3.5 w-3.5 text-muted-foreground/60" />
+                      </div>
+                    </div>
+                    <div className="flex items-center pl-3">
+                      <span className="text-sm text-muted-foreground">No replies yet</span>
+                    </div>
+                  </div>
+                )}
+                </div>
               </div>
-            </div>
+            )}
           </div>
         </ScrollArea>
 
+        {/* Comment input — pinned below scroll area */}
+        {!isEditing && (
+          <div className="border-t bg-background px-6 py-3 shrink-0">
+            <div className="flex gap-2">
+              <Input
+                placeholder="Write a reply..."
+                value={newComment}
+                onChange={(e) => setNewComment(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault()
+                    handleAddComment()
+                  }
+                }}
+                className="text-sm"
+              />
+              <Button className="cursor-pointer" size="icon" onClick={handleAddComment} disabled={loading || !newComment.trim()}>
+                <Send className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        )}
+
         {/* Actions */}
-        <div className="flex items-center justify-between px-6 py-4 border-t bg-muted/20">
-          <div className="flex gap-2">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-t bg-muted/20 px-6 py-3 shrink-0">
+          <div className="flex flex-wrap gap-2">
             {isEditing ? (
               <>
                 <Button className="cursor-pointer" variant="outline" size="sm" onClick={() => setIsEditing(false)}>
@@ -498,14 +582,14 @@ export function ComplaintDetailDialog({
               </>
             ) : (
               <>
-                <Button className="cursor-pointer" variant="ghost" size="sm" onClick={() => setIsEditing(true)}>
+                <Button className="cursor-pointer" variant="outline" size="sm" onClick={() => setIsEditing(true)}>
                   <Edit2 className="h-3.5 w-3.5 mr-2" />
                   Edit
                 </Button>
                 {profile.role === "admin" && (
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
-                      <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive cursor-pointer">
+                      <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive cursor-pointer bg-red-100 border">
                         <Trash2 className="h-3.5 w-3.5 mr-2" />
                         Delete
                       </Button>

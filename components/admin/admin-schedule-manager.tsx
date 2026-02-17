@@ -82,15 +82,15 @@ export function AdminScheduleManager({ shifts, events, tasks, departments, staff
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4">
           <TabsList>
-            <TabsTrigger value="shifts" className="gap-2 cursor-pointer">
+            <TabsTrigger value="shifts" className="gap-2 cursor-pointer data-[state=inactive]:hover:bg-white/40">
               <CalendarDays className="h-4 w-4" />
               <span className="hidden sm:inline">Shifts</span>
             </TabsTrigger>
-            <TabsTrigger value="events" className="gap-2 cursor-pointer">
+            <TabsTrigger value="events" className="gap-2 cursor-pointer data-[state=inactive]:hover:bg-white/40">
               <Users className="h-4 w-4" />
               <span className="hidden sm:inline">Events</span>
             </TabsTrigger>
-            <TabsTrigger value="tasks" className="gap-2 cursor-pointer">
+            <TabsTrigger value="tasks" className="gap-2 cursor-pointer data-[state=inactive]:hover:bg-white/40">
               <Briefcase className="h-4 w-4" />
               <span className="hidden sm:inline">Tasks</span>
             </TabsTrigger>
@@ -102,7 +102,7 @@ export function AdminScheduleManager({ shifts, events, tasks, departments, staff
                 <Button
                   variant="outline"
                   onClick={() => setShowAutoSchedule(true)}
-                  className="flex-1 sm:flex-none bg-transparent cursor-pointer"
+                  className="flex-1 sm:flex-none bg-white cursor-pointer"
                 >
                   <Wand2 className="h-4 w-4 mr-2" />
                   Auto-Generate Rota (In-Progress)

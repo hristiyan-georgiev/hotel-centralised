@@ -4,7 +4,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { AdminResourcesList } from "@/components/admin/admin-resources-list"
 import { CreateResourceDialog } from "@/components/admin/create-resource-dialog"
 import { ManageCategoriesDialog } from "@/components/admin/manage-categories-dialog"
-import { BookOpen, FolderOpen, Clock, FileText } from "lucide-react"
+import { BookOpen, FolderOpen, Clock3, LibraryBig } from "lucide-react"
 import type { Resource } from "@/lib/types"
 
 export default async function AdminResourcesPage() {
@@ -41,64 +41,73 @@ export default async function AdminResourcesPage() {
     ? new Date(Math.max(...resources.map((r) => new Date(r.updated_at).getTime())))
     : null
 
+  const resourceTotal = resources?.length || 0
+  const categoryTotal = categories.length
+  const lastUpdatedLabel = mostRecent
+    ? mostRecent.toLocaleDateString([], { month: "short", day: "numeric", year: "numeric" })
+    : "N/A"
+
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex items-start justify-between">
-        <div className="flex items-center gap-3">
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary">
-            <FileText className="h-6 w-6 text-primary-foreground" />
+    <div className="space-y-6 p-6">
+      <Card className="border-border/70 bg-gradient-to-r from-slate-500/10 via-transparent to-transparent">
+        <CardContent className="flex flex-col gap-6 p-6 md:flex-row md:items-center md:justify-between">
+          <div className="flex items-start gap-4">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
+              <LibraryBig className="h-6 w-6 text-primary" />
+            </div>
+            <div>
+              <h1 className="text-2xl font-semibold tracking-tight">Resources Library</h1>
+              <p className="text-sm text-muted-foreground">
+                Centralized procedures, policies, and references for the operations team.
+              </p>
+            </div>
           </div>
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight">Manage Resources</h1>
-            <p className="text-muted-foreground text-sm">Create and manage hotel documentation and procedures</p>
+
+          <div className="flex flex-wrap gap-2">
+            <ManageCategoriesDialog categories={categories} categoryMap={categoryMap} />
+            <CreateResourceDialog categories={categories} />
           </div>
-        </div>
-        <div className="flex gap-2">
-          <ManageCategoriesDialog categories={categories} categoryMap={categoryMap} />
-          <CreateResourceDialog categories={categories} />
-        </div>
-      </div>
+        </CardContent>
+      </Card>
 
       <div className="grid gap-4 md:grid-cols-3">
-        <Card className="border-blue-500/20 bg-gradient-to-br from-blue-500/5 to-transparent">
+        <Card className="border-border/70 bg-card">
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-3xl font-bold text-blue-600">{resources?.length || 0}</p>
-                <p className="text-sm font-medium text-muted-foreground mt-1">Total Resources</p>
+                <p className="text-3xl font-semibold">{resourceTotal}</p>
+                <p className="mt-1 text-sm font-medium text-muted-foreground">Total Resources</p>
               </div>
-              <div className="p-3 rounded-xl bg-blue-500/10">
-                <BookOpen className="h-6 w-6 text-blue-500" />
+              <div className="rounded-xl bg-primary/10 p-3">
+                <BookOpen className="h-6 w-6 text-primary" />
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="border-purple-500/20 bg-gradient-to-br from-purple-500/5 to-transparent">
+        <Card className="border-border/70 bg-card">
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-3xl font-bold text-purple-600">{categories.length}</p>
-                <p className="text-sm font-medium text-muted-foreground mt-1">Categories</p>
+                <p className="text-3xl font-semibold">{categoryTotal}</p>
+                <p className="mt-1 text-sm font-medium text-muted-foreground">Categories</p>
               </div>
-              <div className="p-3 rounded-xl bg-purple-500/10">
-                <FolderOpen className="h-6 w-6 text-purple-500" />
+              <div className="rounded-xl bg-primary/10 p-3">
+                <FolderOpen className="h-6 w-6 text-primary" />
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="border-emerald-500/20 bg-gradient-to-br from-emerald-500/5 to-transparent">
+        <Card className="border-border/70 bg-card">
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-3xl font-bold text-emerald-600">
-                  {mostRecent ? mostRecent.toLocaleDateString([], { month: 'short', day: 'numeric' }) : 'N/A'}
-                </p>
-                <p className="text-sm font-medium text-muted-foreground mt-1">Last Updated</p>
+                <p className="text-3xl font-semibold">{lastUpdatedLabel}</p>
+                <p className="mt-1 text-sm font-medium text-muted-foreground">Last Updated</p>
               </div>
-              <div className="p-3 rounded-xl bg-emerald-500/10">
-                <Clock className="h-6 w-6 text-emerald-500" />
+              <div className="rounded-xl bg-primary/10 p-3">
+                <Clock3 className="h-6 w-6 text-primary" />
               </div>
             </div>
           </CardContent>

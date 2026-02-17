@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useMemo, useState } from "react"
 import { createClient } from "@/lib/supabase/client"
 import { useRouter } from "next/navigation"
 import { format, startOfWeek, endOfWeek, eachDayOfInterval, isSameDay, parseISO, addWeeks, subWeeks } from "date-fns"
@@ -11,15 +11,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge"
 import { Calendar } from "@/components/ui/calendar"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Progress } from "@/components/ui/progress"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import {
   CalendarDays,
   ChevronLeft,
   ChevronRight,
   Clock,
-  MapPin,
-  User,
-  CheckCircle2,
-  Circle,
   AlertCircle,
   Filter,
   CalendarIcon,
@@ -84,6 +82,21 @@ export function ScheduleView({ profile, shifts, events, tasks, departments, staf
     })
   }, [tasks, filterDepartment, filterStaff])
 
+  const selectedDayShifts = useMemo(
+    () => filteredShifts.filter((shift) => isSameDay(parseISO(shift.shift_date), selectedDate)),
+    [filteredShifts, selectedDate],
+  )
+
+  const selectedDayEvents = useMemo(
+    () => filteredEvents.filter((event) => isSameDay(parseISO(event.event_date), selectedDate)),
+    [filteredEvents, selectedDate],
+  )
+
+  const selectedDayTasks = useMemo(
+    () => filteredTasks.filter((task) => isSameDay(parseISO(task.due_date), selectedDate)),
+    [filteredTasks, selectedDate],
+  )
+
   // Get items for a specific date
   const getShiftsForDate = (date: Date) => {
     return filteredShifts.filter((shift) => isSameDay(parseISO(shift.shift_date), date))
@@ -102,8 +115,42 @@ export function ScheduleView({ profile, shifts, events, tasks, departments, staf
     (s) => s.staff_id === profile.id && weekDays.some((d) => isSameDay(parseISO(s.shift_date), d)),
   ).length
 
+  const myConfirmedShiftsThisWeek = shifts.filter(
+    (s) => s.staff_id === profile.id && s.acknowledged && weekDays.some((d) => isSameDay(parseISO(s.shift_date), d)),
+  ).length
+
   const unacknowledgedShifts = shifts.filter((s) => s.staff_id === profile.id && !s.acknowledged).length
   const pendingTasks = tasks.filter((t) => t.assigned_to === profile.id && t.status !== "completed").length
+
+  const myTotalTasks = tasks.filter((t) => t.assigned_to === profile.id).length
+  const myCompletedTasks = tasks.filter((t) => t.assigned_to === profile.id && t.status === "completed").length
+
+  const weekTotals = useMemo(() => {
+    const inCurrentWeek = (dateString: string) => weekDays.some((day) => isSameDay(parseISO(dateString), day))
+
+    return {
+      shifts: filteredShifts.filter((shift) => inCurrentWeek(shift.shift_date)).length,
+      events: filteredEvents.filter((event) => inCurrentWeek(event.event_date)).length,
+      tasks: filteredTasks.filter((task) => inCurrentWeek(task.due_date)).length,
+    }
+  }, [filteredShifts, filteredEvents, filteredTasks, weekDays])
+
+  const visibleStaffMembers = useMemo(() => {
+    return staffMembers
+      .filter((staff) => (filterDepartment === "all" ? true : staff.department_id === filterDepartment))
+      .filter((staff) => (filterStaff === "all" ? true : staff.id === filterStaff))
+      .sort((a, b) => a.full_name.localeCompare(b.full_name))
+  }, [staffMembers, filterDepartment, filterStaff])
+
+  const shiftConfirmationRate = myShiftsThisWeek === 0 ? 100 : Math.round((myConfirmedShiftsThisWeek / myShiftsThisWeek) * 100)
+  const taskCompletionRate = myTotalTasks === 0 ? 0 : Math.round((myCompletedTasks / myTotalTasks) * 100)
+
+  const weekLabel = `${format(weekStart, "MMM d")} - ${format(endOfWeek(weekStart, { weekStartsOn: 1 }), "MMM d, yyyy")}`
+
+  const syncSelectedDate = (date: Date) => {
+    setSelectedDate(date)
+    setWeekStart(startOfWeek(date, { weekStartsOn: 1 }))
+  }
 
   const handleAcknowledgeShift = async (shiftId: string) => {
     const supabase = createClient()
@@ -166,426 +213,530 @@ export function ScheduleView({ profile, shifts, events, tasks, departments, staf
   }
 
   return (
-    <div className="space-y-4">
-      {/* Stats and Filters Toolbar */}
-      <Card>
-        <CardContent className="p-4">
-          <div className="flex flex-col gap-4">
-            {/* Stats Row */}
-            <div className="flex items-center gap-6 pb-4 border-b">
-              <div className="flex items-center gap-2">
-                <CalendarDays className="h-4 w-4 text-primary" />
-                <span className="text-sm text-muted-foreground">My shifts:</span>
-                <Badge variant="secondary" className="font-semibold">{myShiftsThisWeek}</Badge>
+    <div className="space-y-5">
+      <Card className="border-border/70 bg-gradient-to-r from-slate-500/10 via-transparent to-transparent">
+        <CardContent className="space-y-4 p-4 sm:p-5">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <div className="flex items-start gap-4">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
+                <CalendarDays className="h-6 w-6 text-primary" />
               </div>
-              <div className="flex items-center gap-2">
-                <AlertCircle className="h-4 w-4 text-amber-600" />
-                <span className="text-sm text-muted-foreground">Unconfirmed:</span>
-                <Badge variant={unacknowledgedShifts > 0 ? "destructive" : "secondary"} className="font-semibold">
-                  {unacknowledgedShifts}
-                </Badge>
-              </div>
-              <div className="flex items-center gap-2">
-                <Briefcase className="h-4 w-4 text-blue-600" />
-                <span className="text-sm text-muted-foreground">Pending tasks:</span>
-                <Badge variant="secondary" className="font-semibold">{pendingTasks}</Badge>
+              <div>
+                <h1 className="text-2xl font-semibold tracking-tight">Schedule</h1>
+                <p className="mt-1 text-sm text-muted-foreground">{weekLabel}</p>
               </div>
             </div>
 
-            {/* Filters and View Toggle Row */}
-            <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
-              <div className="flex flex-wrap gap-2 items-center">
-                <Filter className="h-4 w-4 text-muted-foreground" />
+            <div className="flex flex-wrap items-center gap-2">
+              <Button variant="outline" size="sm" className="cursor-pointer bg-white" onClick={() => syncSelectedDate(new Date())}>
+                <CalendarDays className="mr-2 h-4 w-4" />
+                Today
+              </Button>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button className="cursor-pointer bg-white" variant="outline" size="sm">
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    Jump to date
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="end">
+                  <Calendar
+                    mode="single"
+                    selected={selectedDate}
+                    onSelect={(date) => {
+                      if (date) {
+                        syncSelectedDate(date)
+                      }
+                    }}
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
+
+              <Tabs value={view} onValueChange={(value) => setView(value as "week" | "day")}
+              >
+                <TabsList className="h-9">
+                  <TabsTrigger value="week" className="cursor-pointer text-xs data-[state=inactive]:hover:bg-white/40">Week</TabsTrigger>
+                  <TabsTrigger value="day" className="cursor-pointer text-xs data-[state=inactive]:hover:bg-white/40">Day</TabsTrigger>
+                </TabsList>
+              </Tabs>
+            </div>
+          </div>
+
+          <div className="grid gap-3 lg:grid-cols-[1fr_1fr_auto]">
+            <div className="space-y-1.5">
+              <p className="text-xs font-medium text-muted-foreground">Department</p>
+              <div className="relative">
+                <Filter className="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <Select value={filterDepartment} onValueChange={setFilterDepartment}>
-                  <SelectTrigger className="w-[160px] h-9 cursor-pointer">
-                    <SelectValue placeholder="All Departments" />
+                  <SelectTrigger className="h-10 w-full cursor-pointer pl-8 bg-white/60">
+                    <SelectValue placeholder="All departments" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem className="cursor-pointer" value="all">All Departments</SelectItem>
-                    {departments.map((dept) => (
-                      <SelectItem key={dept.id} value={dept.id}>
-                        {dept.name}
+                    <SelectItem className="cursor-pointer" value="all">All departments</SelectItem>
+                    {departments.map((department) => (
+                      <SelectItem key={department.id} value={department.id}>
+                        {department.name}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
-                <Select value={filterStaff} onValueChange={setFilterStaff}>
-                  <SelectTrigger className="w-[160px] h-9 cursor-pointer">
-                    <SelectValue placeholder="All Staff" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem className="cursor-pointer" value="all">All Staff</SelectItem>
-                    <SelectItem className="cursor-pointer" value={profile.id}>My Schedule</SelectItem>
-                    {staffMembers
-                      .filter((s) => s.id !== profile.id)
-                      .map((staff) => (
-                        <SelectItem className="cursor-pointer" key={staff.id} value={staff.id}>
-                          {staff.full_name}
-                        </SelectItem>
-                      ))}
-                  </SelectContent>
-                </Select>
               </div>
+            </div>
 
-              <div className="flex gap-2 items-center">
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button className="cursor-pointer" variant="outline" size="sm">
-                      <CalendarIcon className="h-4 w-4 mr-2" />
-                      Jump to date
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="end">
-                    <Calendar
-                      mode="single"
-                      selected={selectedDate}
-                      onSelect={(date) => {
-                        if (date) {
-                          setSelectedDate(date)
-                          setWeekStart(startOfWeek(date, { weekStartsOn: 1 }))
-                        }
-                      }}
-                      initialFocus
-                    />
-                  </PopoverContent>
-                </Popover>
-                <Tabs value={view} onValueChange={(v) => setView(v as "week" | "day")}>
-                  <TabsList className="h-9">
-                    <TabsTrigger value="week" className="text-xs cursor-pointer">Week</TabsTrigger>
-                    <TabsTrigger value="day" className="text-xs cursor-pointer">Day</TabsTrigger>
-                  </TabsList>
-                </Tabs>
+            <div className="space-y-1.5">
+              <p className="text-xs font-medium text-muted-foreground">Staff</p>
+              <Select value={filterStaff} onValueChange={setFilterStaff}>
+                <SelectTrigger className="h-10 w-full cursor-pointer bg-white/60">
+                  <SelectValue placeholder="All staff" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem className="cursor-pointer" value="all">All staff</SelectItem>
+                  <SelectItem className="cursor-pointer" value={profile.id}>My schedule</SelectItem>
+                  {staffMembers
+                    .filter((staff) => staff.id !== profile.id)
+                    .map((staff) => (
+                      <SelectItem className="cursor-pointer" key={staff.id} value={staff.id}>
+                        {staff.full_name}
+                      </SelectItem>
+                    ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="flex items-end">
+              <div className="rounded-md border px-3 py-2 text-xs text-muted-foreground">
+                {filterDepartment === "all" ? "All departments" : "Filtered department"} - {filterStaff === "all" ? "All staff" : "Filtered staff"}
               </div>
             </div>
           </div>
         </CardContent>
       </Card>
 
-      {/* Week Navigation */}
-      <div className="flex items-center justify-between">
-        <Button className="cursor-pointer" variant="ghost" size="sm" onClick={() => setWeekStart(subWeeks(weekStart, 1))}>
-          <ChevronLeft className="h-4 w-4 mr-2" />
-          Previous
-        </Button>
-        <h2 className="text-lg font-semibold">
-          {format(weekStart, "MMM d")} - {format(endOfWeek(weekStart, { weekStartsOn: 1 }), "MMM d, yyyy")}
-        </h2>
-        <Button className="cursor-pointer" variant="ghost" size="sm" onClick={() => setWeekStart(addWeeks(weekStart, 1))}>
-          Next
-          <ChevronRight className="h-4 w-4 ml-2" />
-        </Button>
+      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <Card className="border-border/70">
+          <CardContent className="p-4">
+            <p className="text-xs text-muted-foreground">My shifts this week</p>
+            <p className="mt-1 text-2xl font-semibold">{myShiftsThisWeek}</p>
+            <div className="mt-3 space-y-1.5">
+              <div className="flex items-center justify-between text-[11px] text-muted-foreground">
+                <span>Confirmation</span>
+                <span>{shiftConfirmationRate}%</span>
+              </div>
+              <Progress value={shiftConfirmationRate} className="h-1.5" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-border/70">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <p className="text-xs text-muted-foreground">Unconfirmed shifts</p>
+              <AlertCircle className="h-4 w-4 text-amber-500" />
+            </div>
+            <p className="mt-1 text-2xl font-semibold">{unacknowledgedShifts}</p>
+            <p className="mt-2 text-[11px] text-muted-foreground">Pending acknowledgement from your profile</p>
+          </CardContent>
+        </Card>
+
+        <Card className="border-border/70">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <p className="text-xs text-muted-foreground">My pending tasks</p>
+              <Briefcase className="h-4 w-4 text-blue-500" />
+            </div>
+            <p className="mt-1 text-2xl font-semibold">{pendingTasks}</p>
+            <div className="mt-3 space-y-1.5">
+              <div className="flex items-center justify-between text-[11px] text-muted-foreground">
+                <span>Completion</span>
+                <span>{taskCompletionRate}%</span>
+              </div>
+              <Progress value={taskCompletionRate} className="h-1.5" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-border/70">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <p className="text-xs text-muted-foreground">Items this week</p>
+              <Users className="h-4 w-4 text-primary" />
+            </div>
+            <p className="mt-1 text-2xl font-semibold">{weekTotals.shifts + weekTotals.events + weekTotals.tasks}</p>
+            <div className="mt-2 flex flex-wrap gap-1.5 text-[10px]">
+              <Badge variant="secondary">{weekTotals.shifts} shifts</Badge>
+              <Badge variant="secondary">{weekTotals.events} events</Badge>
+              <Badge variant="secondary">{weekTotals.tasks} tasks</Badge>
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
-      {/* Schedule Grid */}
       {view === "week" ? (
-        <div className="grid grid-cols-1 md:grid-cols-7 gap-3">
-          {weekDays.map((day) => {
-            const dayShifts = getShiftsForDate(day)
-            const dayEvents = getEventsForDate(day)
-            const dayTasks = getTasksForDate(day)
-            const isToday = isSameDay(day, new Date())
-
-            return (
-              <Card key={day.toISOString()} className={cn(
-                "min-h-[180px]",
-                isToday && "ring-2 ring-primary"
-              )}>
-                <CardHeader className="p-3 pb-2">
-                  <CardTitle className="flex items-center justify-between">
-                    <span className={cn("text-sm font-medium", isToday && "text-primary")}>
-                      {format(day, "EEE")}
-                    </span>
-                    <span
-                      className={cn(
-                        "flex h-7 w-7 items-center justify-center rounded-full text-sm font-semibold",
-                        isToday ? "bg-primary text-primary-foreground" : "text-muted-foreground",
-                      )}
-                    >
-                      {format(day, "d")}
-                    </span>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="p-3 pt-0 space-y-1.5">
-                  {/* Shifts */}
-                  {dayShifts.map((shift) => (
-                    <button
-                      key={shift.id}
-                      onClick={() => setSelectedShift(shift)}
-                      className={cn(
-                        "w-full text-left p-2 rounded-md text-xs transition-colors cursor-pointer",
-                        shift.staff_id === profile.id
-                          ? "bg-primary/10 hover:bg-primary/15 border-l-2 border-primary"
-                          : "bg-muted/50 hover:bg-muted",
-                        !shift.acknowledged && shift.staff_id === profile.id && "ring-1 ring-primary/30",
-                      )}
-                    >
-                      <div className="flex items-center gap-1.5 font-medium">
-                        <Clock className="h-3 w-3 shrink-0" />
-                        <span>{shift.start_time?.slice(0, 5)}-{shift.end_time?.slice(0, 5)}</span>
-                      </div>
-                      <div className="truncate text-muted-foreground mt-1 text-[11px]">
-                        {shift.staff?.full_name || "Unassigned"}
-                      </div>
-                      {shift.staff_id === profile.id && !shift.acknowledged && (
-                        <Badge variant="outline" className="mt-1 text-[10px] h-4 bg-background cursor-pointer">
-                          Confirm
-                        </Badge>
-                      )}
-                    </button>
-                  ))}
-
-                  {/* Events */}
-                  {dayEvents.map((event) => (
-                    <button
-                      key={event.id}
-                      onClick={() => setSelectedEvent(event)}
-                      className="w-full text-left p-2 rounded-md text-xs bg-blue-50 dark:bg-blue-950/20 hover:bg-blue-100 dark:hover:bg-blue-950/30 border-l-2 border-blue-500 transition-colors cursor-pointer"
-                    >
-                      <div className="flex items-center gap-1.5 font-medium text-blue-700 dark:text-blue-300">
-                        <Users className="h-3 w-3 shrink-0" />
-                        <span className="truncate">{event.title}</span>
-                      </div>
-                      {event.start_time && (
-                        <div className="text-muted-foreground mt-1 text-[11px]">{event.start_time.slice(0, 5)}</div>
-                      )}
-                    </button>
-                  ))}
-
-                  {/* Tasks */}
-                  {dayTasks.map((task) => (
-                    <button
-                      key={task.id}
-                      onClick={() => setSelectedTask(task)}
-                      className={cn(
-                        "w-full text-left p-2 rounded-md text-xs transition-colors border-l-2 cursor-pointer",
-                        task.status === "completed"
-                          ? "bg-green-50 dark:bg-green-950/20 border-green-500 opacity-70"
-                          : task.priority === "urgent"
-                            ? "bg-red-50 dark:bg-red-950/20 border-destructive hover:bg-red-100 dark:hover:bg-red-950/30"
-                            : "bg-amber-50 dark:bg-amber-950/20 border-amber-500 hover:bg-amber-100 dark:hover:bg-amber-950/30",
-                      )}
-                    >
-                      <div className="flex items-center gap-1.5">
-                        {task.status === "completed" ? (
-                          <CheckCircle2 className="h-3 w-3 text-green-600 shrink-0" />
-                        ) : (
-                          <Circle className="h-3 w-3 text-muted-foreground shrink-0" />
-                        )}
-                        <span className="truncate font-medium">{task.title}</span>
-                      </div>
-                      {task.assignee && (
-                        <div className="text-muted-foreground mt-1 truncate text-[11px]">{task.assignee.full_name}</div>
-                      )}
-                    </button>
-                  ))}
-
-                  {dayShifts.length === 0 && dayEvents.length === 0 && dayTasks.length === 0 && (
-                    <p className="text-xs text-muted-foreground text-center py-8">No items</p>
-                  )}
-                </CardContent>
-              </Card>
-            )
-          })}
-        </div>
-      ) : (
-        /* Day View */
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold">{format(selectedDate, "EEEE, MMMM d, yyyy")}</h2>
-            <div className="flex gap-2">
-              <Button
-                className="cursor-pointer"
-                variant="ghost"
-                size="sm"
-                onClick={() => {
-                  const prev = new Date(selectedDate)
-                  prev.setDate(prev.getDate() - 1)
-                  setSelectedDate(prev)
-                  setWeekStart(startOfWeek(prev, { weekStartsOn: 1 }))
-                }}
-              >
-                <ChevronLeft className="h-4 w-4" />
-              </Button>
-              <Button
-                className="cursor-pointer"
-                variant="ghost"
-                size="sm"
-                onClick={() => {
-                  const next = new Date(selectedDate)
-                  next.setDate(next.getDate() + 1)
-                  setSelectedDate(next)
-                  setWeekStart(startOfWeek(next, { weekStartsOn: 1 }))
-                }}
-              >
-                <ChevronRight className="h-4 w-4" />
-              </Button>
+        <Card className="border-border/70">
+          <CardHeader className="pb-3">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <CardTitle className="text-base">Team rota table</CardTitle>
+              <div className="flex items-center gap-2">
+                <Button
+                  className="cursor-pointer"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    const prevWeek = subWeeks(weekStart, 1)
+                    setWeekStart(prevWeek)
+                    setSelectedDate(prevWeek)
+                  }}
+                >
+                  <ChevronLeft className="mr-1 h-4 w-4" />
+                  Previous
+                </Button>
+                <Button
+                  className="cursor-pointer"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    const nextWeek = addWeeks(weekStart, 1)
+                    setWeekStart(nextWeek)
+                    setSelectedDate(nextWeek)
+                  }}
+                >
+                  Next
+                  <ChevronRight className="ml-1 h-4 w-4" />
+                </Button>
+              </div>
             </div>
-          </div>
-          <div className="space-y-4">
-            {/* Shifts Section */}
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium flex items-center gap-2">
-                  <Clock className="h-4 w-4 text-muted-foreground" />
-                  Shifts ({getShiftsForDate(selectedDate).length})
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                {getShiftsForDate(selectedDate).length === 0 ? (
-                  <p className="text-sm text-muted-foreground py-4">No shifts scheduled</p>
-                ) : (
-                  getShiftsForDate(selectedDate).map((shift) => (
-                    <button
-                      key={shift.id}
-                      onClick={() => setSelectedShift(shift)}
-                      className={cn(
-                        "w-full text-left p-3 rounded-md border transition-colors cursor-pointer",
-                        shift.staff_id === profile.id
-                          ? "border-primary bg-primary/5 hover:bg-primary/10"
-                          : "hover:bg-muted/50",
+          </CardHeader>
+
+          <CardContent className="pt-0">
+            <div className="mb-4 rounded-lg border bg-muted/20 p-3">
+              <p className="text-xs font-medium text-muted-foreground">Team events this week</p>
+              <div className="mt-2 grid gap-2 md:grid-cols-2 xl:grid-cols-4">
+                {weekDays.map((day) => {
+                  const dayEvents = getEventsForDate(day)
+                  return (
+                    <div key={`event-strip-${day.toISOString()}`} className="rounded-md border bg-background p-2">
+                      <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">{format(day, "EEE d MMM")}</p>
+                      {dayEvents.length === 0 ? (
+                        <p className="mt-1 text-xs text-muted-foreground">No events</p>
+                      ) : (
+                        <div className="mt-1 space-y-1">
+                          {dayEvents.slice(0, 2).map((event) => (
+                            <button
+                              key={`week-event-strip-${event.id}`}
+                              onClick={() => setSelectedEvent(event)}
+                              className="w-full truncate rounded border border-blue-200 bg-blue-50 px-2 py-1 text-left text-[11px] font-medium text-blue-900 hover:bg-blue-100 cursor-pointer"
+                            >
+                              {(event.start_time?.slice(0, 5) || "All day") + ` - ${event.title}`}
+                            </button>
+                          ))}
+                          {dayEvents.length > 2 && <p className="text-[11px] text-muted-foreground">+{dayEvents.length - 2} more</p>}
+                        </div>
                       )}
-                    >
-                      <div className="flex items-center justify-between gap-3">
-                        <div className="flex items-center gap-3 flex-1 min-w-0">
-                          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10">
-                            <User className="h-4 w-4 text-primary" />
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+
+            {visibleStaffMembers.length === 0 ? (
+              <div className="rounded-lg border border-dashed py-10 text-center text-sm text-muted-foreground">
+                No team members match the current filters.
+              </div>
+            ) : (
+              <Table className="min-w-[1300px]">
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-[220px]">Team member</TableHead>
+                    {weekDays.map((day) => {
+                      const isToday = isSameDay(day, new Date())
+                      return (
+                        <TableHead key={`header-${day.toISOString()}`} className={cn("w-[170px]", isToday && "text-primary")}>
+                          <div className="leading-tight">
+                            <p className="text-[11px] uppercase tracking-wide">{format(day, "EEE")}</p>
+                            <p>{format(day, "d MMM")}</p>
                           </div>
-                          <div className="flex-1 min-w-0">
-                            <p className="font-medium text-sm">{shift.staff?.full_name || "Unassigned"}</p>
-                            <p className="text-xs text-muted-foreground">
-                              {shift.start_time?.slice(0, 5)} - {shift.end_time?.slice(0, 5)}
-                              {shift.department && ` • ${shift.department.name}`}
+                        </TableHead>
+                      )
+                    })}
+                    <TableHead className="w-[140px]">Weekly load</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {visibleStaffMembers.map((staff) => {
+                    const staffWeekShifts = filteredShifts.filter(
+                      (shift) => shift.staff_id === staff.id && weekDays.some((day) => isSameDay(parseISO(shift.shift_date), day)),
+                    ).length
+
+                    const staffWeekTasks = filteredTasks.filter(
+                      (task) => task.assigned_to === staff.id && weekDays.some((day) => isSameDay(parseISO(task.due_date), day)),
+                    ).length
+
+                    return (
+                      <TableRow key={`staff-row-${staff.id}`}>
+                        <TableCell className="align-top whitespace-normal">
+                          <p className="font-semibold">{staff.full_name}</p>
+                          <p className="text-xs text-muted-foreground truncate">{staff.email}</p>
+                        </TableCell>
+
+                        {weekDays.map((day) => {
+                          const staffDayShifts = filteredShifts.filter(
+                            (shift) => shift.staff_id === staff.id && isSameDay(parseISO(shift.shift_date), day),
+                          )
+
+                          const staffDayTasks = filteredTasks.filter(
+                            (task) => task.assigned_to === staff.id && isSameDay(parseISO(task.due_date), day),
+                          )
+
+                          return (
+                            <TableCell key={`staff-day-${staff.id}-${day.toISOString()}`} className="align-top whitespace-normal">
+                              {staffDayShifts.length === 0 && staffDayTasks.length === 0 ? (
+                                <p className="text-xs text-muted-foreground">Off</p>
+                              ) : (
+                                <div className="space-y-1.5">
+                                  {staffDayShifts.map((shift) => (
+                                    <button
+                                      key={`staff-shift-${shift.id}`}
+                                      onClick={() => setSelectedShift(shift)}
+                                      className={cn(
+                                        "w-full rounded border px-2 py-1 text-left text-[11px] transition-colors cursor-pointer",
+                                        shift.acknowledged
+                                          ? "border-primary/30 bg-primary/[0.06] hover:bg-primary/[0.12]"
+                                          : "border-amber-200 bg-amber-50 hover:bg-amber-100",
+                                      )}
+                                    >
+                                      <span className="inline-flex items-center gap-1 font-medium">
+                                        <Clock className="h-3 w-3" />
+                                        {shift.start_time?.slice(0, 5)} - {shift.end_time?.slice(0, 5)}
+                                      </span>
+                                    </button>
+                                  ))}
+
+                                  {staffDayTasks.map((task) => (
+                                    <button
+                                      key={`staff-task-${task.id}`}
+                                      onClick={() => setSelectedTask(task)}
+                                      className={cn(
+                                        "w-full rounded border px-2 py-1 text-left text-[11px] transition-colors cursor-pointer",
+                                        task.status === "completed"
+                                          ? "border-green-200 bg-green-50"
+                                          : task.priority === "urgent"
+                                            ? "border-red-200 bg-red-50 hover:bg-red-100"
+                                            : "border-border/70 bg-background hover:bg-muted/40",
+                                      )}
+                                    >
+                                      <span className="font-medium">Task:</span> {task.title}
+                                    </button>
+                                  ))}
+                                </div>
+                              )}
+                            </TableCell>
+                          )
+                        })}
+
+                        <TableCell className="align-top whitespace-normal">
+                          <div className="space-y-1 text-xs text-muted-foreground">
+                            <p>
+                              <span className="font-semibold text-foreground">{staffWeekShifts}</span> shifts
+                            </p>
+                            <p>
+                              <span className="font-semibold text-foreground">{staffWeekTasks}</span> tasks
                             </p>
                           </div>
-                        </div>
-                        <div className="flex items-center gap-2 shrink-0">
-                          <Badge variant={shift.shift_type === "regular" ? "secondary" : "outline"} className="text-xs">
-                            {shift.shift_type}
-                          </Badge>
-                          {shift.acknowledged ? (
-                            <CheckCircle2 className="h-4 w-4 text-green-600" />
-                          ) : (
-                            shift.staff_id === profile.id && (
-                              <Badge variant="destructive" className="text-xs cursor-pointer">
-                                Confirm
-                              </Badge>
-                            )
-                          )}
-                        </div>
-                      </div>
-                    </button>
-                  ))
-                )}
-              </CardContent>
-            </Card>
+                        </TableCell>
+                      </TableRow>
+                    )
+                  })}
+                </TableBody>
+              </Table>
+            )}
+          </CardContent>
+        </Card>
+      ) : (
+        <section className="grid gap-4 xl:grid-cols-[280px_1fr]">
+          <Card className="border-border/70">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base">{format(selectedDate, "EEEE, MMM d")}</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="rounded-lg border p-2">
+                <Calendar
+                  mode="single"
+                  selected={selectedDate}
+                  onSelect={(date) => {
+                    if (date) {
+                      syncSelectedDate(date)
+                    }
+                  }}
+                />
+              </div>
 
-            {/* Events Section */}
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium flex items-center gap-2">
-                  <Users className="h-4 w-4 text-muted-foreground" />
-                  Events ({getEventsForDate(selectedDate).length})
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                {getEventsForDate(selectedDate).length === 0 ? (
-                  <p className="text-sm text-muted-foreground py-4">No events scheduled</p>
-                ) : (
-                  getEventsForDate(selectedDate).map((event) => (
-                    <button
-                      key={event.id}
-                      onClick={() => setSelectedEvent(event)}
-                      className="w-full text-left p-3 rounded-md border border-blue-200 dark:border-blue-900 bg-blue-50 dark:bg-blue-950/20 hover:bg-blue-100 dark:hover:bg-blue-950/30 transition-colors cursor-pointer"
-                    >
-                      <div className="flex items-center justify-between gap-3">
-                        <div className="flex-1 min-w-0">
-                          <p className="font-medium text-sm">{event.title}</p>
-                          <div className="flex items-center gap-3 text-xs text-muted-foreground mt-1">
-                            {event.start_time && (
-                              <span className="flex items-center gap-1">
-                                <Clock className="h-3 w-3" />
-                                {event.start_time.slice(0, 5)}
-                                {event.end_time && `-${event.end_time.slice(0, 5)}`}
-                              </span>
-                            )}
-                            {event.location && (
-                              <span className="flex items-center gap-1 truncate">
-                                <MapPin className="h-3 w-3" />
-                                {event.location}
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                        <Badge variant="outline" className="text-xs shrink-0">{event.event_type}</Badge>
-                      </div>
-                    </button>
-                  ))
-                )}
-              </CardContent>
-            </Card>
+              <div className="grid grid-cols-3 gap-2 text-center text-xs">
+                <div className="rounded-md border p-2">
+                  <p className="font-semibold">{selectedDayShifts.length}</p>
+                  <p className="text-muted-foreground">Shifts</p>
+                </div>
+                <div className="rounded-md border p-2">
+                  <p className="font-semibold">{selectedDayEvents.length}</p>
+                  <p className="text-muted-foreground">Events</p>
+                </div>
+                <div className="rounded-md border p-2">
+                  <p className="font-semibold">{selectedDayTasks.length}</p>
+                  <p className="text-muted-foreground">Tasks</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
 
-            {/* Tasks Section */}
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium flex items-center gap-2">
-                  <Briefcase className="h-4 w-4 text-muted-foreground" />
-                  Tasks ({getTasksForDate(selectedDate).length})
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                {getTasksForDate(selectedDate).length === 0 ? (
-                  <p className="text-sm text-muted-foreground py-4">No tasks due</p>
+          <Card className="border-border/70">
+            <CardHeader className="pb-3">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <CardTitle className="text-base">Day team table</CardTitle>
+                <div className="flex items-center gap-2">
+                  <Button
+                    className="cursor-pointer"
+                    variant="outline"
+                    size="icon"
+                    onClick={() => {
+                      const previousDay = new Date(selectedDate)
+                      previousDay.setDate(previousDay.getDate() - 1)
+                      syncSelectedDate(previousDay)
+                    }}
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    className="cursor-pointer"
+                    variant="outline"
+                    size="icon"
+                    onClick={() => {
+                      const nextDay = new Date(selectedDate)
+                      nextDay.setDate(nextDay.getDate() + 1)
+                      syncSelectedDate(nextDay)
+                    }}
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            </CardHeader>
+
+            <CardContent>
+              {visibleStaffMembers.length === 0 ? (
+                <div className="rounded-lg border border-dashed py-10 text-center text-sm text-muted-foreground">
+                  No team members match the current filters.
+                </div>
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-[230px]">Team member</TableHead>
+                      <TableHead>Shifts</TableHead>
+                      <TableHead>Tasks</TableHead>
+                      <TableHead className="w-[140px]">Daily load</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {visibleStaffMembers.map((staff) => {
+                      const staffDayShifts = selectedDayShifts.filter((shift) => shift.staff_id === staff.id)
+                      const staffDayTasks = selectedDayTasks.filter((task) => task.assigned_to === staff.id)
+
+                      return (
+                        <TableRow key={`day-staff-${staff.id}`}>
+                          <TableCell className="align-top whitespace-normal">
+                            <p className="font-semibold">{staff.full_name}</p>
+                            <p className="text-xs text-muted-foreground truncate">{staff.email}</p>
+                          </TableCell>
+
+                          <TableCell className="align-top whitespace-normal">
+                            {staffDayShifts.length === 0 ? (
+                              <p className="text-xs text-muted-foreground">No shift</p>
+                            ) : (
+                              <div className="space-y-1.5">
+                                {staffDayShifts.map((shift) => (
+                                  <button
+                                    key={`day-staff-shift-${shift.id}`}
+                                    onClick={() => setSelectedShift(shift)}
+                                    className={cn(
+                                      "w-full rounded border px-2 py-1 text-left text-[11px] transition-colors cursor-pointer",
+                                      shift.acknowledged
+                                        ? "border-primary/30 bg-primary/[0.06] hover:bg-primary/[0.12]"
+                                        : "border-amber-200 bg-amber-50 hover:bg-amber-100",
+                                    )}
+                                  >
+                                    {shift.start_time?.slice(0, 5)} - {shift.end_time?.slice(0, 5)}
+                                  </button>
+                                ))}
+                              </div>
+                            )}
+                          </TableCell>
+
+                          <TableCell className="align-top whitespace-normal">
+                            {staffDayTasks.length === 0 ? (
+                              <p className="text-xs text-muted-foreground">No tasks</p>
+                            ) : (
+                              <div className="space-y-1.5">
+                                {staffDayTasks.map((task) => (
+                                  <button
+                                    key={`day-staff-task-${task.id}`}
+                                    onClick={() => setSelectedTask(task)}
+                                    className={cn(
+                                      "w-full rounded border px-2 py-1 text-left text-[11px] transition-colors cursor-pointer",
+                                      task.status === "completed"
+                                        ? "border-green-200 bg-green-50"
+                                        : task.priority === "urgent"
+                                          ? "border-red-200 bg-red-50 hover:bg-red-100"
+                                          : "border-border/70 bg-background hover:bg-muted/40",
+                                    )}
+                                  >
+                                    {task.title}
+                                  </button>
+                                ))}
+                              </div>
+                            )}
+                          </TableCell>
+
+                          <TableCell className="align-top whitespace-normal">
+                            <div className="space-y-1 text-xs text-muted-foreground">
+                              <p>
+                                <span className="font-semibold text-foreground">{staffDayShifts.length}</span> shifts
+                              </p>
+                              <p>
+                                <span className="font-semibold text-foreground">{staffDayTasks.length}</span> tasks
+                              </p>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      )
+                    })}
+                  </TableBody>
+                </Table>
+              )}
+
+              <div className="mt-4 border-t pt-4">
+                <p className="text-xs font-medium text-muted-foreground">Team events today</p>
+                {selectedDayEvents.length === 0 ? (
+                  <p className="mt-2 text-sm text-muted-foreground">No events scheduled for this day.</p>
                 ) : (
-                  getTasksForDate(selectedDate).map((task) => (
-                    <button
-                      key={task.id}
-                      onClick={() => setSelectedTask(task)}
-                      className={cn(
-                        "w-full text-left p-3 rounded-md border transition-colors cursor-pointer",
-                        task.status === "completed"
-                          ? "border-green-200 dark:border-green-900 bg-green-50 dark:bg-green-950/20 opacity-70"
-                          : task.priority === "urgent"
-                            ? "border-red-200 dark:border-red-900 bg-red-50 dark:bg-red-950/20 hover:bg-red-100 dark:hover:bg-red-950/30"
-                            : "hover:bg-muted/50",
-                      )}
-                    >
-                      <div className="flex items-center justify-between gap-3">
-                        <div className="flex items-center gap-3 flex-1 min-w-0">
-                          {task.status === "completed" ? (
-                            <CheckCircle2 className="h-4 w-4 text-green-600 shrink-0" />
-                          ) : (
-                            <Circle className="h-4 w-4 text-muted-foreground shrink-0" />
-                          )}
-                          <div className="flex-1 min-w-0">
-                            <p className="font-medium text-sm">{task.title}</p>
-                            <p className="text-xs text-muted-foreground truncate">
-                              {task.assignee?.full_name || "Unassigned"}
-                            </p>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-2 shrink-0">
-                          <Badge
-                            variant={
-                              task.priority === "urgent"
-                                ? "destructive"
-                                : task.priority === "low"
-                                  ? "secondary"
-                                  : "default"
-                            }
-                            className="text-xs"
-                          >
-                            {task.priority}
-                          </Badge>
-                          <Badge variant="outline" className="text-xs">{task.status.replace("_", " ")}</Badge>
-                        </div>
-                      </div>
-                    </button>
-                  ))
+                  <div className="mt-2 grid gap-2 md:grid-cols-2">
+                    {selectedDayEvents.map((event) => (
+                      <button
+                        key={`day-event-card-${event.id}`}
+                        onClick={() => setSelectedEvent(event)}
+                        className="rounded-md border border-blue-200 bg-blue-50 px-3 py-2 text-left transition-colors hover:bg-blue-100 cursor-pointer"
+                      >
+                        <p className="text-sm font-medium text-blue-900">{event.title}</p>
+                        <p className="text-xs text-blue-800/80">
+                          {(event.start_time?.slice(0, 5) || "All day") + (event.location ? ` - ${event.location}` : "")}
+                        </p>
+                      </button>
+                    ))}
+                  </div>
                 )}
-              </CardContent>
-            </Card>
-          </div>
-        </div>
+              </div>
+            </CardContent>
+          </Card>
+        </section>
       )}
 
       {/* Detail Dialogs */}

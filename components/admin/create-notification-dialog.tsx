@@ -10,7 +10,6 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -58,18 +57,25 @@ export function CreateNotificationDialog() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="cursor-pointer">
+        <Button className="cursor-pointer shadow-sm">
           <Plus className="h-4 w-4 mr-2" />
           New Notification
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[500px]">
-        <form onSubmit={handleSubmit}>
-          <DialogHeader>
-            <DialogTitle>Create Notification</DialogTitle>
-            <DialogDescription>Broadcast an announcement to all staff members</DialogDescription>
+      <DialogContent className="max-h-[90vh] overflow-y-auto p-0 sm:max-w-2xl">
+        <div className="border-b bg-gradient-to-r from-primary/10 via-primary/5 to-transparent px-6 py-5">
+          <DialogHeader className="space-y-2 text-left">
+            <div className="inline-flex w-fit items-center gap-2 rounded-full border bg-background/85 px-3 py-1 text-xs font-medium text-muted-foreground">
+              <Bell className="h-3.5 w-3.5" />
+              Staff Communications
+            </div>
+            <DialogTitle className="text-xl tracking-tight">Create Notification</DialogTitle>
+            <DialogDescription className="text-sm">Broadcast an announcement to all staff members.</DialogDescription>
           </DialogHeader>
-          <div className="grid gap-4 py-4">
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-5 p-6">
+          <section className="space-y-4 rounded-xl border bg-card p-4">
             <div className="grid gap-2">
               <Label htmlFor="title">Title</Label>
               <Input
@@ -77,9 +83,11 @@ export function CreateNotificationDialog() {
                 placeholder="e.g., Important Update"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
+                className="bg-white"
                 required
               />
             </div>
+
             <div className="grid gap-2">
               <Label htmlFor="content">Message</Label>
               <Textarea
@@ -87,47 +95,50 @@ export function CreateNotificationDialog() {
                 placeholder="Enter the full notification message..."
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
-                rows={5}
+                rows={6}
+                className="bg-white"
                 required
               />
             </div>
-            <div className="grid gap-2">
-              <Label htmlFor="priority">Priority</Label>
-              <Select value={priority} onValueChange={setPriority}>
-                <SelectTrigger className="cursor-pointer">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem className="cursor-pointer" value="low">
-                    <div className="flex items-center gap-2">
-                      <Info className="h-4 w-4 text-muted-foreground" />
-                      Low Priority
-                    </div>
-                  </SelectItem>
-                  <SelectItem className="cursor-pointer" value="normal">
-                    <div className="flex items-center gap-2">
-                      <Bell className="h-4 w-4 text-primary" />
-                      Normal
-                    </div>
-                  </SelectItem>
-                  <SelectItem className="cursor-pointer" value="urgent">
-                    <div className="flex items-center gap-2">
-                      <AlertTriangle className="h-4 w-4 text-destructive" />
-                      Urgent
-                    </div>
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-          <DialogFooter>
+          </section>
+
+          <section className="space-y-3 rounded-xl border bg-card p-4">
+            <Label htmlFor="priority">Priority</Label>
+            <Select value={priority} onValueChange={setPriority}>
+              <SelectTrigger className="w-full cursor-pointer bg-white" id="priority">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem className="cursor-pointer" value="low">
+                  <div className="flex items-center gap-2">
+                    <Info className="h-4 w-4 text-muted-foreground" />
+                    Low Priority
+                  </div>
+                </SelectItem>
+                <SelectItem className="cursor-pointer" value="normal">
+                  <div className="flex items-center gap-2">
+                    <Bell className="h-4 w-4 text-primary" />
+                    Normal
+                  </div>
+                </SelectItem>
+                <SelectItem className="cursor-pointer" value="urgent">
+                  <div className="flex items-center gap-2">
+                    <AlertTriangle className="h-4 w-4 text-destructive" />
+                    Urgent
+                  </div>
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          </section>
+
+          <div className="flex flex-wrap justify-end gap-3 border-t pt-4">
             <Button className="cursor-pointer" type="button" variant="outline" onClick={() => setOpen(false)}>
               Cancel
             </Button>
             <Button className="cursor-pointer" type="submit" disabled={loading || !title.trim() || !content.trim()}>
               {loading ? "Sending..." : "Send Notification"}
             </Button>
-          </DialogFooter>
+          </div>
         </form>
       </DialogContent>
     </Dialog>
