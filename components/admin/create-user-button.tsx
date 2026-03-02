@@ -25,14 +25,28 @@ interface CreateUserButtonProps {
   departments: Department[]
 }
 
-// Generate a random temporary password
+// Generate a random temporary password that meets complexity requirements
 function generateTempPassword(): string {
-  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789"
-  let password = ""
-  for (let i = 0; i < 10; i++) {
-    password += chars.charAt(Math.floor(Math.random() * chars.length))
+  const uppercase = "ABCDEFGHJKLMNPQRSTUVWXYZ"
+  const lowercase = "abcdefghjkmnpqrstuvwxyz"
+  const digits = "23456789"
+  const specials = "!@#$%^&*"
+  const allChars = `${uppercase}${lowercase}${digits}${specials}`
+
+  const pickRandom = (chars: string) => chars.charAt(Math.floor(Math.random() * chars.length))
+
+  const passwordChars = [pickRandom(uppercase), pickRandom(lowercase), pickRandom(digits), pickRandom(specials)]
+
+  for (let i = passwordChars.length; i < 10; i++) {
+    passwordChars.push(pickRandom(allChars))
   }
-  return password
+
+  for (let i = passwordChars.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[passwordChars[i], passwordChars[j]] = [passwordChars[j], passwordChars[i]]
+  }
+
+  return passwordChars.join("")
 }
 
 export function CreateUserButton({ departments }: CreateUserButtonProps) {

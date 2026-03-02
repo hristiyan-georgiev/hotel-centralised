@@ -176,6 +176,7 @@ export function NotesList({ notes, currentUserId, categories, selectedDate, user
               <Button
                 variant="ghost"
                 size="icon"
+                aria-label={`Edit note ${note.title}`}
                 className="h-8 w-8 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity cursor-pointer"
                 onClick={() => setEditNote(note)}
               >
@@ -184,6 +185,7 @@ export function NotesList({ notes, currentUserId, categories, selectedDate, user
               <Button
                 variant="ghost"
                 size="icon"
+                aria-label={`Delete note ${note.title}`}
                 className="h-8 w-8 text-destructive hover:text-destructive opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity cursor-pointer"
                 onClick={() => setDeleteNote(note)}
               >
