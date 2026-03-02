@@ -118,7 +118,7 @@ export function ComplaintsList({ complaints, profile, staffMembers, availableTag
                   <h3 className="text-xl font-bold leading-tight">{selected.title}</h3>
                   <p className="text-sm text-muted-foreground mt-1">{selected.description}</p>
                 </div>
-                <Button type="button" variant="outline" size="sm" className="shrink-0" onClick={() => setSelectedComplaint(selected)}>
+                <Button type="button" variant="outline" size="sm" className="shrink-0 cursor-pointer" onClick={() => setSelectedComplaint(selected)}>
                   Open timeline
                   <ArrowRight className="h-3.5 w-3.5" />
                 </Button>

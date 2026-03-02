@@ -9,7 +9,7 @@ create table public.complaints (
   priority text not null default 'normal' check (priority in ('low', 'normal', 'urgent')),
   created_by uuid references public.profiles(id),
   assigned_to uuid references public.profiles(id),
-  department_id uuid references public.departments(id),
+  department_id uuid references public.departments(id) on delete set null,
   resolved_at timestamptz,
   resolved_by uuid references public.profiles(id),
   created_at timestamptz default now(),

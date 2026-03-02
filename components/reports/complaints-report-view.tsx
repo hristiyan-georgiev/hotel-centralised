@@ -549,39 +549,7 @@ export function ComplaintsReportView({ complaints, departments, availableTags, p
               </CardDescription>
             </CardHeader>
             <CardContent>
-              {/* <ComplaintsChart data={data.chartData} /> */}
-              <ComplaintsChart data={[
-                { date: "Jan 10", total: 4, resolved: 3, open: 1 },
-                { date: "Jan 11", total: 6, resolved: 4, open: 2 },
-                { date: "Jan 12", total: 8, resolved: 6, open: 2 },
-                { date: "Jan 13", total: 5, resolved: 4, open: 1 },
-                { date: "Jan 14", total: 7, resolved: 5, open: 2 },
-                { date: "Jan 15", total: 9, resolved: 7, open: 2 },
-                { date: "Jan 16", total: 6, resolved: 4, open: 2 },
-                { date: "Jan 17", total: 3, resolved: 2, open: 1 },
-                { date: "Jan 18", total: 5, resolved: 3, open: 2 },
-                { date: "Jan 19", total: 10, resolved: 8, open: 2 },
-                { date: "Jan 20", total: 12, resolved: 9, open: 3 },
-                { date: "Jan 21", total: 8, resolved: 6, open: 2 },
-                { date: "Jan 22", total: 7, resolved: 5, open: 2 },
-                { date: "Jan 23", total: 6, resolved: 5, open: 1 },
-                { date: "Jan 24", total: 4, resolved: 3, open: 1 },
-                { date: "Jan 25", total: 9, resolved: 7, open: 2 },
-                { date: "Jan 26", total: 11, resolved: 8, open: 3 },
-                { date: "Jan 27", total: 7, resolved: 5, open: 2 },
-                { date: "Jan 28", total: 5, resolved: 4, open: 1 },
-                { date: "Jan 29", total: 8, resolved: 6, open: 2 },
-                { date: "Jan 30", total: 6, resolved: 4, open: 2 },
-                { date: "Jan 31", total: 10, resolved: 7, open: 3 },
-                { date: "Feb 01", total: 7, resolved: 5, open: 2 },
-                { date: "Feb 02", total: 5, resolved: 3, open: 2 },
-                { date: "Feb 03", total: 8, resolved: 6, open: 2 },
-                { date: "Feb 04", total: 6, resolved: 4, open: 2 },
-                { date: "Feb 05", total: 4, resolved: 2, open: 2 },
-                { date: "Feb 06", total: 9, resolved: 6, open: 3 },
-                { date: "Feb 07", total: 7, resolved: 5, open: 2 },
-                { date: "Feb 08", total: 3, resolved: 1, open: 2 },
-              ]} />
+              <ComplaintsChart data={chartData.timelineData} />
             </CardContent>
           </Card>
         </TabsContent>
@@ -629,19 +597,8 @@ export function ComplaintsReportView({ complaints, departments, availableTags, p
               <CardDescription>Distribution of complaints across different categories</CardDescription>
             </CardHeader>
             <CardContent>
-              {/* <TagsChart data={chartData.tagsData} /> */}
-              <TagsChart data={[
-                { name: "Noise", value: 38, color: "#ef4444" },
-                { name: "Cleanliness", value: 34, color: "#f97316" },
-                { name: "Room Service", value: 28, color: "#eab308" },
-                { name: "Maintenance", value: 24, color: "#22c55e" },
-                { name: "Staff Behavior", value: 20, color: "#3b82f6" },
-                { name: "Amenities", value: 18, color: "#8b5cf6" },
-                { name: "Billing", value: 16, color: "#ec4899" },
-                { name: "Wi-Fi", value: 12, color: "#06b6d4" },
-                { name: "Parking", value: 6, color: "#64748b" },
-                { name: "Other", value: 4, color: "#a1a1aa" },
-              ]} />
+              <TagsChart data={chartData.tagsData} />
+
             </CardContent>
           </Card>
         </TabsContent>

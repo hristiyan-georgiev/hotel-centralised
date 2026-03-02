@@ -69,7 +69,7 @@ export function ResourcesList({ groupedResources, categories }: ResourcesListPro
             <Button
               type="button"
               variant={selectedCategory === "all" ? "default" : "outline"}
-              className="w-full justify-between"
+              className="w-full justify-between cursor-pointer"
               onClick={() => setSelectedCategory("all")}
             >
               <span>All Resources</span>
@@ -91,7 +91,7 @@ export function ResourcesList({ groupedResources, categories }: ResourcesListPro
                       type="button"
                       key={category}
                       variant={isActive ? "secondary" : "ghost"}
-                      className="w-full justify-between"
+                      className="w-full justify-between cursor-pointer"
                       onClick={() => setSelectedCategory(category)}
                     >
                       <span className="truncate">{category}</span>
@@ -217,7 +217,7 @@ export function ResourcesList({ groupedResources, categories }: ResourcesListPro
                                   type="button"
                                   variant={isExpanded ? "secondary" : "outline"}
                                   size="sm"
-                                  className="h-8"
+                                  className="h-8 cursor-pointer"
                                   onClick={() => toggleExpanded(resource.id)}
                                 >
                                   {isExpanded ? "Hide" : "Read"}
