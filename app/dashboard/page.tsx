@@ -33,6 +33,15 @@ interface QuickLink {
   icon: LucideIcon
 }
 
+interface TodaySignal {
+  title: string
+  count: number
+  helper: string
+  href: string
+  icon: LucideIcon
+  highlight?: "critical" | "attention"
+}
+
 export default async function DashboardPage() {
   const supabase = await createClient()
 
@@ -188,61 +197,147 @@ export default async function DashboardPage() {
     },
   ]
 
+  const primaryActions: QuickLink[] = [
+    {
+      href: "/dashboard/notes",
+      title: "Handover Notes",
+      description: "Capture today’s shift updates",
+      icon: ClipboardList,
+    },
+    {
+      href: "/dashboard/complaints",
+      title: "Complaints",
+      description: "Review and resolve active cases",
+      icon: MessageSquareWarning,
+    },
+    {
+      href: "/dashboard/notifications",
+      title: "Notifications",
+      description: "Stay on top of unread alerts",
+      icon: Bell,
+    },
+  ]
+
+  const todaySignals: TodaySignal[] = [
+    {
+      title: "Urgent notes",
+      count: urgentCount,
+      helper: urgentCount > 0 ? "Review now in handover notes" : "No urgent notes logged",
+      href: "/dashboard/notes",
+      icon: AlertTriangle,
+      highlight: "critical",
+    },
+    {
+      title: "Open complaints",
+      count: openComplaints.length,
+      helper: `${urgentComplaints} marked urgent`,
+      href: "/dashboard/complaints",
+      icon: MessageSquareWarning,
+      highlight: urgentComplaints > 0 ? "attention" : undefined,
+    },
+    {
+      title: "Unread notifications",
+      count: unreadNotifications,
+      helper: `${unreadUrgentNotifications} urgent unread`,
+      href: "/dashboard/notifications",
+      icon: Bell,
+      highlight: unreadUrgentNotifications > 0 ? "attention" : undefined,
+    },
+  ]
+
+  const resolvedComplaints = complaints?.filter((complaint) => complaint.status === "resolved").length || 0
+
   return (
     <div className="min-h-full bg-background p-4 sm:p-6 lg:p-8">
       <div className="space-y-6">
-        <Card className="border-border/70 bg-gradient-to-r from-primary/10 via-background to-background">
-          <CardContent className="flex flex-col gap-6 p-6 lg:flex-row lg:items-center lg:justify-between">
-            <div className="flex items-start gap-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
-                <LayoutDashboard className="h-6 w-6 text-primary" />
+        <Card className="border-border/70 bg-gradient-to-r from-slate-500/10 via-background to-background">
+          <CardContent className="space-y-6 p-6 lg:p-7">
+            <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
+              <div className="flex items-start gap-4">
+                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
+                  <LayoutDashboard className="h-6 w-6 text-primary" />
+                </div>
+                <div className="space-y-3">
+                  <h1 className="text-2xl font-semibold tracking-tight">Dashboard</h1>
+                  <p className="max-w-2xl text-sm text-muted-foreground">
+                    A clear live overview of today&apos;s activity, complaints, and alerts.
+                  </p>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Badge variant="outline" className="capitalize">
+                      {profile.role}
+                    </Badge>
+                    <Badge variant="secondary" className="font-normal">
+                      {departmentName}
+                    </Badge>
+                  </div>
+                </div>
               </div>
-              <div className="space-y-2">
-                <h1 className="text-2xl font-semibold tracking-tight">Dashboard</h1>
-                <p className="max-w-2xl text-sm text-muted-foreground">
-                  A focused shift overview with today&apos;s priorities, active queues, and direct access to the tools your team uses most.
-                </p>
-                <div className="flex flex-wrap items-center gap-2">
-                  <Badge variant="outline" className="capitalize">
-                    {profile.role}
-                  </Badge>
-                  <Badge variant="secondary" className="font-normal">
-                    {departmentName}
-                  </Badge>
+
+              <div className="grid gap-3 sm:grid-cols-2 lg:w-[420px]">
+                <div className="rounded-xl border border-border bg-card px-4 py-3">
+                  <p className="text-xs uppercase tracking-wide text-muted-foreground">Today</p>
+                  <p className="mt-1 text-sm font-medium">{todayLabel}</p>
+                  <p className="mt-2 text-sm text-muted-foreground">{totalToday} notes logged for handover</p>
+                </div>
+                <div className="rounded-xl border border-border bg-card px-4 py-3">
+                  <p className="text-xs uppercase tracking-wide text-muted-foreground">Shift status</p>
+                  <p className="mt-1 text-sm font-medium">
+                    {criticalItems > 0 ? `${criticalItems} priority items` : "Stable operations"}
+                  </p>
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    {criticalItems > 0 ? "Focus urgent queues before handover." : "No critical backlog right now."}
+                  </p>
                 </div>
               </div>
             </div>
 
-            <div className="rounded-xl border border-border bg-card px-4 py-3">
-              <p className="text-xs uppercase tracking-wide text-muted-foreground">Today</p>
-              <p className="mt-1 text-sm font-medium">{todayLabel}</p>
-              <p className="mt-2 text-sm text-muted-foreground">
-                {criticalItems > 0
-                  ? `${criticalItems} critical items need attention`
-                  : "No critical items. Team is on track."}
-              </p>
+            <div className="grid gap-3 sm:grid-cols-3">
+              {primaryActions.map((action) => (
+                <Link
+                  key={action.href}
+                  href={action.href}
+                  className="group flex items-start gap-3 rounded-xl border border-border bg-card px-4 py-3 transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-sm"
+                >
+                  <div className="mt-0.5 rounded-lg bg-primary/10 p-2 text-primary">
+                    <action.icon className="h-4 w-4" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-medium">{action.title}</p>
+                    <p className="text-xs text-muted-foreground">{action.description}</p>
+                  </div>
+                  <ArrowRight className="h-4 w-4 text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:text-primary" />
+                </Link>
+              ))}
             </div>
           </CardContent>
         </Card>
 
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          {metrics.map((metric) => (
-            <Link key={metric.label} href={metric.href} className="group">
-              <Card className="h-full border-border/80 transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-sm">
-                <CardContent className="flex h-full flex-col justify-between gap-4 p-5">
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <p className="text-sm text-muted-foreground">{metric.label}</p>
-                      <p className="mt-1 line-clamp-1 text-2xl font-semibold tracking-tight">{metric.value}</p>
-                    </div>
-                    <div className="rounded-lg bg-primary/10 p-2 text-primary">
-                      <metric.icon className="h-4 w-4" />
-                    </div>
+        <div className="grid gap-4 md:grid-cols-3">
+          {todaySignals.map((signal) => (
+            <Link key={signal.title} href={signal.href} className="group">
+              <Card
+                className={`h-full border-border/80 transition-all hover:-translate-y-0.5 hover:shadow-sm ${
+                  signal.highlight === "critical"
+                    ? "border-destructive/30 bg-destructive/5 hover:border-destructive/45"
+                    : signal.highlight === "attention"
+                      ? "border-primary/30 bg-primary/5 hover:border-primary/45"
+                      : "hover:border-primary/30"
+                }`}
+              >
+                <CardContent className="flex h-full items-start justify-between gap-3 p-5">
+                  <div>
+                    <p className="text-sm text-muted-foreground">{signal.title}</p>
+                    <p className="mt-1 text-3xl font-semibold tracking-tight">{signal.count}</p>
+                    <p className="mt-2 text-xs text-muted-foreground">{signal.helper}</p>
                   </div>
-
-                  <div className="flex items-center justify-between text-sm text-muted-foreground">
-                    <span>{metric.helper}</span>
-                    <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5 group-hover:text-primary" />
+                  <div
+                    className={`rounded-lg p-2 ${
+                      signal.highlight === "critical"
+                        ? "bg-destructive/10 text-destructive"
+                        : "bg-primary/10 text-primary"
+                    }`}
+                  >
+                    <signal.icon className="h-4 w-4" />
                   </div>
                 </CardContent>
               </Card>
@@ -250,33 +345,66 @@ export default async function DashboardPage() {
           ))}
         </div>
 
-        <div className="grid gap-6 xl:grid-cols-[1.6fr_1fr]">
+        <Card className="border-border/80">
+          <CardHeader>
+            <CardTitle>Today&apos;s Performance Snapshot</CardTitle>
+            <CardDescription>High-level metrics for your shift and handover readiness.</CardDescription>
+          </CardHeader>
+          <CardContent className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            {metrics.map((metric) => (
+              <Link
+                key={metric.label}
+                href={metric.href}
+                className="group rounded-xl border border-border bg-card p-4 transition-all hover:border-primary/40 hover:bg-primary/5"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="text-sm text-muted-foreground">{metric.label}</p>
+                    <p className="mt-1 line-clamp-1 text-2xl font-semibold tracking-tight">{metric.value}</p>
+                  </div>
+                  <div className="rounded-lg bg-primary/10 p-2 text-primary">
+                    <metric.icon className="h-4 w-4" />
+                  </div>
+                </div>
+
+                <div className="mt-4 flex items-center justify-between text-sm text-muted-foreground">
+                  <span>{metric.helper}</span>
+                  <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5 group-hover:text-primary" />
+                </div>
+              </Link>
+            ))}
+          </CardContent>
+        </Card>
+
+        <div className="grid gap-6 xl:grid-cols-[1.55fr_1fr]">
           <Card className="border-border/80">
             <CardHeader>
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
                   <CardTitle>Operational Queue</CardTitle>
-                  <CardDescription>Priority items to review at the start of your shift.</CardDescription>
+                  <CardDescription>What needs immediate review before end-of-shift handover.</CardDescription>
                 </div>
                 <Badge variant={criticalItems > 0 ? "destructive" : "secondary"}>
                   {criticalItems > 0 ? `${criticalItems} critical` : "Stable"}
                 </Badge>
               </div>
             </CardHeader>
-            <CardContent className="space-y-6">
-              <section className="space-y-3">
+            <CardContent className="grid gap-4 md:grid-cols-3">
+              <section className="space-y-3 rounded-xl border bg-muted/20 p-4">
                 <div className="flex items-center gap-2 text-sm font-medium">
                   <AlertTriangle className="h-4 w-4 text-destructive" />
                   Urgent Notes
                 </div>
                 {urgentNotes.length === 0 ? (
-                  <p className="rounded-lg border border-dashed px-3 py-2 text-sm text-muted-foreground">No urgent notes logged for today.</p>
+                  <p className="rounded-lg border border-dashed bg-background px-3 py-2 text-sm text-muted-foreground">
+                    No urgent notes logged for today.
+                  </p>
                 ) : (
                   <div className="space-y-2">
                     {urgentNotes.map((note) => (
-                      <div key={note.id} className="rounded-lg border px-3 py-2">
+                      <div key={note.id} className="rounded-lg border bg-background px-3 py-2">
                         <p className="text-sm font-medium">{note.title}</p>
-                        <p className="mt-1 text-xs text-muted-foreground line-clamp-2">{note.content}</p>
+                        <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">{note.content}</p>
                       </div>
                     ))}
                   </div>
@@ -287,61 +415,71 @@ export default async function DashboardPage() {
                 </Link>
               </section>
 
-              <section className="space-y-3">
+              <section className="space-y-3 rounded-xl border bg-muted/20 p-4">
                 <div className="flex items-center gap-2 text-sm font-medium">
                   <MessageSquareWarning className="h-4 w-4 text-primary" />
                   Open Complaints
                 </div>
                 {complaintQueue.length === 0 ? (
-                  <p className="rounded-lg border border-dashed px-3 py-2 text-sm text-muted-foreground">No open complaints at this time.</p>
+                  <p className="rounded-lg border border-dashed bg-background px-3 py-2 text-sm text-muted-foreground">
+                    No open complaints at this time.
+                  </p>
                 ) : (
                   <div className="space-y-2">
                     {complaintQueue.map((complaint) => (
-                      <div key={complaint.id} className="rounded-lg border px-3 py-2">
+                      <div key={complaint.id} className="rounded-lg border bg-background px-3 py-2">
                         <div className="flex items-start justify-between gap-2">
-                          <p className="text-sm font-medium line-clamp-1">{complaint.title}</p>
+                          <p className="line-clamp-1 text-sm font-medium">{complaint.title}</p>
                           {complaint.priority === "urgent" && (
                             <Badge variant="destructive" className="h-5 px-1.5 text-[10px] uppercase">
                               Urgent
                             </Badge>
                           )}
                         </div>
-                        <p className="mt-1 text-xs text-muted-foreground line-clamp-2">{complaint.description}</p>
+                        <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">{complaint.description}</p>
                       </div>
                     ))}
                   </div>
                 )}
-                <Link href="/dashboard/complaints" className="inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline">
+                <Link
+                  href="/dashboard/complaints"
+                  className="inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline"
+                >
                   Open complaints
                   <ArrowRight className="h-3.5 w-3.5" />
                 </Link>
               </section>
 
-              <section className="space-y-3">
+              <section className="space-y-3 rounded-xl border bg-muted/20 p-4">
                 <div className="flex items-center gap-2 text-sm font-medium">
                   <Bell className="h-4 w-4 text-primary" />
                   Unread Notifications
                 </div>
                 {unreadQueue.length === 0 ? (
-                  <p className="rounded-lg border border-dashed px-3 py-2 text-sm text-muted-foreground">You are all caught up.</p>
+                  <p className="rounded-lg border border-dashed bg-background px-3 py-2 text-sm text-muted-foreground">
+                    You are all caught up.
+                  </p>
                 ) : (
                   <div className="space-y-2">
                     {unreadQueue.map((notification) => (
-                      <div key={notification.id} className="rounded-lg border px-3 py-2">
+                      <div key={notification.id} className="rounded-lg border bg-background px-3 py-2">
                         <div className="flex items-start justify-between gap-2">
-                          <p className="text-sm font-medium line-clamp-1">{notification.title}</p>
+                          <p className="line-clamp-1 text-sm font-medium">{notification.title}</p>
                           {notification.priority === "urgent" && (
                             <Badge variant="destructive" className="h-5 px-1.5 text-[10px] uppercase">
                               Urgent
                             </Badge>
                           )}
                         </div>
-                        <p className="mt-1 text-xs text-muted-foreground line-clamp-2">{notification.content}</p>
+                        <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">{notification.content}</p>
                       </div>
                     ))}
                   </div>
                 )}
-                <Link href="/dashboard/notifications" className="inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline">
+                <Link
+                  href="/dashboard/notifications"
+                  className="inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline"
+                >
                   Open notifications
                   <ArrowRight className="h-3.5 w-3.5" />
                 </Link>
@@ -353,7 +491,7 @@ export default async function DashboardPage() {
             <Card className="border-border/80">
               <CardHeader>
                 <CardTitle>Quick Actions</CardTitle>
-                <CardDescription>Jump straight into your daily workflows.</CardDescription>
+                <CardDescription>Jump directly into day-to-day tools.</CardDescription>
               </CardHeader>
               <CardContent className="space-y-2">
                 {quickLinks.map((link) => (
@@ -366,10 +504,10 @@ export default async function DashboardPage() {
                       <link.icon className="h-4 w-4" />
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className="text-sm font-medium line-clamp-1">{link.title}</p>
-                      <p className="text-xs text-muted-foreground line-clamp-1">{link.description}</p>
+                      <p className="line-clamp-1 text-sm font-medium">{link.title}</p>
+                      <p className="line-clamp-1 text-xs text-muted-foreground">{link.description}</p>
                     </div>
-                    <ArrowRight className="h-4 w-4 text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:text-primary" />
+                    <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5 group-hover:text-primary" />
                   </Link>
                 ))}
               </CardContent>
@@ -392,6 +530,10 @@ export default async function DashboardPage() {
                 <div className="flex items-center justify-between rounded-lg border bg-background px-3 py-2">
                   <span className="text-muted-foreground">Unread notifications</span>
                   <span className="font-medium">{unreadNotifications}</span>
+                </div>
+                <div className="flex items-center justify-between rounded-lg border bg-background px-3 py-2">
+                  <span className="text-muted-foreground">Resolved complaints</span>
+                  <span className="font-medium">{resolvedComplaints}</span>
                 </div>
                 <div className="rounded-lg border border-dashed bg-background px-3 py-2 text-xs text-muted-foreground">
                   Keep this queue clear before handover to maintain service continuity.

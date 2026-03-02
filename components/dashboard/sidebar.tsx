@@ -92,7 +92,7 @@ export function Sidebar({ profile }: SidebarProps) {
   const adminLinks: { href: string; label: string; icon: LucideIcon }[] = [
     { href: "/admin", label: "Admin Dashboard", icon: Settings },
     { href: "/admin/users", label: "Manage Users", icon: Users },
-    { href: "/admin/departments", label: "Departments", icon: Building2 },
+    { href: "/admin/departments", label: "Manage Departments", icon: Building2 },
     { href: "/admin/resources", label: "Manage Resources", icon: FileText },
     { href: "/admin/notifications", label: "Manage Notifications", icon: Bell },
     { href: "/admin/tasks", label: "Manage Tasks", icon: Briefcase },

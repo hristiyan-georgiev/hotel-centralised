@@ -131,6 +131,10 @@ export function CreateNotificationDialog() {
             </Select>
           </section>
 
+          <p className="text-xs text-muted-foreground italic">
+            PS: You are in a sandbox. In production, notifications will automatically send an email to each staff member in your property.
+          </p>
+
           <div className="flex flex-wrap justify-end gap-3 border-t pt-4">
             <Button className="cursor-pointer" type="button" variant="outline" onClick={() => setOpen(false)}>
               Cancel
